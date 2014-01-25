@@ -7,19 +7,17 @@ var http = require('http');
 exports.initializeService = function(client) {
     config.receivermodes.forEach(function(item) { 
         client.subscribe('/'+item.receivermode, function(message){
-            var httpreq=http.request({
-                host: config.receiverhost,
-                port: config.receiverport,
-                path: config.receiverpath,
-                method: 'POST'
-            }, function(resp) {
-                console.log(resp.statusCode);
-            });
             item.commands.forEach(function(cmd){
                 console.log(cmd);
-                httpreq.write(cmd);
+                var httpreq=http.request({
+                    host: config.receiverhost,
+                    port: config.receiverport,
+                    path: config.receiverpath,
+                    method: 'POST'
+                }, function(resp) {
+                    console.log(resp.statusCode);
+                }).write(cmd);
                 httpreq.end();
-                
             });
         });
     });
