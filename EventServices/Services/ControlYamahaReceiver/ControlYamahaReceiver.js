@@ -16,7 +16,8 @@ exports.initializeService = function(client) {
                     method: 'POST'
                 }, function(resp) {
                     console.log(resp.statusCode);
-                }).write(cmd);
+                });
+                httpreq.write(cmd);
                 httpreq.end();
             });
         });
