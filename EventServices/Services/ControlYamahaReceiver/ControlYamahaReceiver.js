@@ -18,8 +18,9 @@ exports.initializeService = function(client) {
             item.commands.forEach(function(cmd){
                 console.log(cmd);
                 httpreq.write(cmd);
+                httpreq.end();
+                
             });
-            httpreq.end();
         });
     });
 };
