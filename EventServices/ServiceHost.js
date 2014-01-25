@@ -11,10 +11,11 @@ var stdio = require('stdio'),
 //commandline options
 var ops = stdio.getopt({
     'localserver': {key: 'l', description: 'Run local pubhub server. Server and port information will be used by both server and services.'},
-    'serveraddress': {key: 's', args: 1, mandatory: true, description: 'Host address for the pubhub server. Eg http://localhost:8080/pubhub'}
+    'serveraddress': {key: 's', args: 1, mandatory: true, description: 'Host address for the pubhub server. Eg localhost'},
+    'port': {key: 'p', args: 1, mandatory: true, description: 'The port for the pubhuv server. Eg 8080'}
 });
 //check for server address
-if (!ops.serveraddress){
+if (!ops.serveraddress || !ops.port){
     ops.printHelp();
     process.exit(1);
 }
@@ -25,16 +26,15 @@ if (ops.localserver){ //
     var server = http.createServer(),
     bayeux = new faye.NodeAdapter({mount: '/', timeout: 45});
     bayeux.attach(server);
-    server.listen(process.env.PORT);
+    server.listen(ops.port);
     //set local client
     client=bayeux.getClient();
 }else{
     //No local pubhub server - initialize client
-    client = new faye.Client('http://'+process.env.IP+":"+process.env.PORT);
+    client = new faye.Client('http://'+ops.serveraddress+":"+ops.port);
     client.connect();
 }
 
-// continue to load services
 // dynamically load Services from /ActiveServices folder
 var servicespath=path_module.join(process.env.PWD, "EventServices/Services");
 var files = fs.readdirSync(servicespath);
@@ -43,18 +43,12 @@ for(var i in files){
     servicefile=path_module.join(servicespath,files[i], "service.js");
     if (!fs.existsSync(servicefile)) continue;
     var module = require(servicefile);
-    module.initializeService(client);    
+    module.initializeService(client);    // each Service is initialized and could have long running async "processes" active (eg arduino-serial-monitor)
     service_holder[servicefile]=module;
 }
 
+client.publish('/lightsonsoft', {
+    roomnr:     '3'
+});
 
-
-// each Service should be provided with a function for sending and receiving messages/events (dependency injection)
-// each Service is initialized and could have long running async "processes" active (eg arduino-serial-monitor)
-setInterval(function(){
-    console.log("sent message: smallevent");
-    client.publish('/smallevent', {
-        text:     'small event created from main!',
-        howbig:   'small'
-    });
-}, 5000);
+client.publish('/watchtvlivingroom', {'empty':''});
