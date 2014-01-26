@@ -5,6 +5,8 @@ exports.initializeService = function(client) {
         client.publish('/lightsonsoft', {
             roomnr:     '3'
         });
-        client.publish('/pvrcommandrequested', {'command':'pause'});
+        setTimeout(function(){ 
+            client.publish('/watchtvlivingroom', {'command':'pause'});
+        }, 5000);
     }, 1000);
 };
