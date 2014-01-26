@@ -1,5 +1,6 @@
 //Service listens to lightsonsoft, lightsonbright, lightsoff - all with roomnr as argument
 //should listen to setspecificlight (tellstick-argument-specific)
+//an alternative to using tellstick could be rc-
 var exec = require('child_process').exec;
 
 var config = require('./serviceconfig.json');

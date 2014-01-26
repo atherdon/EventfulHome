@@ -1,6 +1,10 @@
 //Service for watering and monitoring a balcony garden - service listens to shortmanualwatering and should publish newsensorvalue, lowwaterleveldetected
-/* insperation: 
-
+/* 
+    SensorValues
+        SensorType
+        SensorSource
+        SensorValues
+        SensorTime
 
 */
 var config = require('./serviceconfig.json');
