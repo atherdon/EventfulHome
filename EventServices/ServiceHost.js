@@ -46,9 +46,3 @@ for(var i in files){
     module.initializeService(client);    // each Service is initialized and could have long running async "processes" active (eg arduino-serial-monitor)
     service_holder[servicefile]=module;
 }
-
-client.publish('/lightsonsoft', {
-    roomnr:     '3'
-});
-
-client.publish('/watchtvlivingroom', {'empty':''});

@@ -1,8 +1,16 @@
+//Service for watering and monitoring a balcony garden - service listens to shortmanualwatering and should publish newsensorvalue, lowwaterleveldetected
+/* insperation: 
+
+
+*/
+var config = require('./serviceconfig.json');
+var http = require('http');  
+
 exports.initializeService = function(client) {
-    client.subscribe('/smallevent', function(message){
-        client.publish('/bigevent', {
-                text:     'bigevent created from small event!',
-                howbig:   'big'
+    config.receivermodes.forEach(function(item) { 
+        client.subscribe('/'+item.receivermode, function(message){
+            console.log('sending:'+item.commands);
+            SeqHttpReq(item.commands);
         });
     });
 };
