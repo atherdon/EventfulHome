@@ -10,7 +10,11 @@ var serialPort;
 
 exports.initializeService = function(client) {
     serialPort= new SerialPort(config.serialport, {
-      baudrate: config.baudrate
+        baudrate: 9600,
+         dataBits: 8, 
+         parity: 'none', 
+         stopBits: 1, 
+         flowControl: false 
     });
     
     serialPort.on("open", function () {
@@ -26,7 +30,6 @@ exports.initializeService = function(client) {
     });
 
     config.HDMISignals.forEach(function(item) {
-        console.log(item.scene);
         client.subscribe('/'+item.scene, function(message){
             console.log(item.signal);
             if (arduinoready){
