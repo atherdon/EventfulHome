@@ -2,7 +2,8 @@
 //Service listens to watchtvlivingroom, watchmediapclivingroom, playps3livingroom, watchchromecastlivingroom, watchtvbedroom, watchmediapcbedroom, playps3bedroom, watchchromecastbedroom
 var exec = require('child_process').exec;
 var config = require('./serviceconfig.json');
-var SerialPort = require("serialport").SerialPort;
+var serialport = require("serialport");
+var SerialPort = serialport.SerialPort;
 var arduinoready=false;
 
 var serialPort;
@@ -10,7 +11,7 @@ var serialPort;
 exports.initializeService = function(client) {
     serialPort= new SerialPort(config.serialport, {
       baudrate: config.baudrate,
-      parser: SerialPort.parsers.readline("\n")
+      parser: serialport.parsers.readline("\n")
     });
     
     serialPort.on("open", function () {
