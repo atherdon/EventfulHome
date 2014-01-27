@@ -10,8 +10,7 @@ var serialPort;
 
 exports.initializeService = function(client) {
     serialPort= new SerialPort(config.serialport, {
-      baudrate: config.baudrate,
-      parser: serialport.parsers.readline("\n")
+      baudrate: config.baudrate
     });
     
     serialPort.on("open", function () {
