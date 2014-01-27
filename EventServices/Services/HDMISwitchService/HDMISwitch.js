@@ -24,6 +24,7 @@ exports.initializeService = function(client) {
     });
 
     config.HDMISignals.forEach(function(item) {
+        console.log(item.scene);
         client.subscribe('/'+item.scene, function(message){
             console.log(item.signal);
             if (arduinoready){
