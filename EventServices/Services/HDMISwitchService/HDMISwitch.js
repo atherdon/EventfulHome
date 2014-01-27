@@ -21,6 +21,9 @@ exports.initializeService = function(client) {
         console.log('serialport closed');
         arduinoready=false;
       });
+      serialPort.on('data', function(data) {
+        console.log('from arduino:'+data);
+      });
     });
 
     config.HDMISignals.forEach(function(item) {
