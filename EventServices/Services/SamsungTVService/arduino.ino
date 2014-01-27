@@ -3,6 +3,7 @@ String inputString = "";
 boolean stringComplete = false;
 
 void setup() {
+  delay(1000);
   Serial.begin(9600);
   pinMode(IRledPin, OUTPUT);
   digitalWrite(IRledPin, LOW);
@@ -12,6 +13,7 @@ void setup() {
 
 void loop() {
   if (stringComplete) {
+    
     int sepPosition;  // the position of the next comma in the string
     int mpulses[200];
     int mdelays[200];
@@ -19,7 +21,7 @@ void loop() {
     int IRpulse;
     int IRdelay;
     String pulseAndDelay;
-    
+
     do{
       sepPosition = inputString.indexOf(';');
       if(sepPosition != -1){
@@ -66,8 +68,10 @@ void serialEvent() {
     // if the incoming character is a newline, set a flag
     // so the main loop can do something about it:
     if (inChar == '\n') {
+      //Serial.println("sofar:"+inputString);
       stringComplete = true;
     } 
+    
   }
 }
 
@@ -87,4 +91,3 @@ void pulseIR(long microsecs) {
   }
   sei();  // this turns them back on
 }
-
