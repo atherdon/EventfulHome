@@ -18,20 +18,20 @@ exports.initializeService = function(client) {
     });
     
     serialPort.on("open", function () {
-      console.log('serialport open');
+      console.log("serialport open");
       arduinoready=true;
-      serialPort.on('close', function(data) {
-        console.log('serialport closed');
+      serialPort.on("close", function(data) {
+        console.log("serialport closed");
         arduinoready=false;
       });
-      serialPort.on('data', function(data) {
-        console.log('from arduino:'+data);
+      serialPort.on("data", function(data) {
+        console.log("from arduino:"+data);
       });
     });
 
     config.HDMISignals.forEach(function(item) {
         client.subscribe('/'+item.scene, function(message){
-            console.log(item.signal);
+            //console.log(item.signal);
             if (arduinoready){
                 serialPort.write(item.signal+"\n", function(err, results) {
                     console.log('err ' + err);
