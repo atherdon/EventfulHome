@@ -1,4 +1,4 @@
-#define IRledPin 13
+#define IRledPin 12
 String inputString = "";       
 boolean stringComplete = false;
 

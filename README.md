@@ -42,6 +42,7 @@ https://github.com/targettio/Arduino-IR-remote
 http://www.righto.com/2009/08/multi-protocol-infrared-remote-library.html
 http://jerrylparker.com/?p=94
 http://blog.lucaseckels.com/2009/05/04/really-simple-arduino-ir-receiver/
+database with IR-codes: http://irdb.tk/
 
 Control Yamaha receiver - use http-api
 insperation from https://github.com/BirdAPI/RX-V867-EventGhost-Plugin/blob/master/rxv867.py
