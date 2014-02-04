@@ -1,5 +1,5 @@
 // use lirc to control or arduino->ir-transmitter ()
-//Service listens to watchtvlivingroom, watchmediapclivingroom, playps3livingroom, watchchromecastlivingroom, watchtvbedroom, watchmediapcbedroom, playps3bedroom, watchchromecastbedroom
+//Service listens to playmusickitchen
 var exec = require('child_process').exec;
 var config = require('./serviceconfig.json');
 var serialport = require("serialport");
