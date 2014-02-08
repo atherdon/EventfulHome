@@ -11,7 +11,7 @@ var http = require('http'),
     });
    
     response.writeHead(501, { 'Content-Type': 'application/json' });
-    response.end(JSON.stringify(widgets.widgets));
+    response.end(JSON.stringify(widgets));
   });
   
   server.listen(20000);
