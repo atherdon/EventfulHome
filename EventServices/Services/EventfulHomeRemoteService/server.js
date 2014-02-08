@@ -8,7 +8,7 @@ var http = require('http');
     request.on('data', function (chunk) {
       data += chunk;
     });
-    String resp="";
+    var resp="";
     response.writeHead(501, { 'Content-Type': 'application/json' });
     response.end(JSON.stringify(resp));
   });
