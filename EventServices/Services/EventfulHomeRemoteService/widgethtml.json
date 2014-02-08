@@ -1,0 +1,24 @@
+{
+    "widgets": [
+        {
+            "name": "quickf",
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "quickfs",
+            "htmlstring": "<html><body>Special quick function 2<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "quick32",
+            "htmlstring": "<html><body>Special quick function 3<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "bedroom",
+            "htmlstring": "<html><body>bedroom function<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "something other",
+            "htmlstring": "<html><body>Special misc function<br><input type=button value='do something'></input></body></html>"
+        }
+    ]
+}
