@@ -1,27 +1,17 @@
-var http = require('http'),
-    winston = require('winston');
+var http = require('http');
 
-/**
- * Creates the server for the pinpoint web service
- * @param {int} port: Port for the server to run on
- */
-exports.createServer = function (port) {
   var server = http.createServer(function (request, response) {
     var data = '';
     
-    winston.info('Incoming Request', { url: request.url });
+    console.log('Incoming Request', { url: request.url });
     
     request.on('data', function (chunk) {
       data += chunk;
     });
-    
+    String resp="";
     response.writeHead(501, { 'Content-Type': 'application/json' });
-    response.end(JSON.stringify({ message: 'not implemented' }));
+    response.end(JSON.stringify(resp));
   });
   
-  if (port) {
-    server.listen(port);
-  }
+  server.listen(20000);
   
-  return server;
-};
