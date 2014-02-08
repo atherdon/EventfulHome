@@ -1,4 +1,5 @@
-var http = require('http');
+var http = require('http'),
+    widgets = require('./widgethtml.json');
 
   var server = http.createServer(function (request, response) {
     var data = '';
@@ -8,9 +9,9 @@ var http = require('http');
     request.on('data', function (chunk) {
       data += chunk;
     });
-    var resp="";
+   
     response.writeHead(501, { 'Content-Type': 'application/json' });
-    response.end(JSON.stringify(resp));
+    response.end(JSON.stringify(widgets.widgets));
   });
   
   server.listen(20000);
