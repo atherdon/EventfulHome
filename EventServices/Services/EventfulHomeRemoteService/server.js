@@ -1,3 +1,6 @@
+//Example from here: http://blog.nodejitsu.com/a-simple-webservice-in-nodejs/
+
+
 var http = require('http'),
     widgets = require('./widgethtml.json');
 
@@ -15,4 +18,6 @@ var http = require('http'),
   });
   
   server.listen(20000);
+  
+  
   

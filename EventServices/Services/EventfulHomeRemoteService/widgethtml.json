@@ -2,7 +2,7 @@
     "widgets": [
         {
             "name": "quickf",
-            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='do something'></input></body></html>"
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='do something' onClick='show()''></input><script type='text/javascript'>function show() { Android.showToast(toast);}</script></body></html>"
         },
         {
             "name": "quickfs",
