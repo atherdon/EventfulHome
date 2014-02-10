@@ -2,11 +2,13 @@
 
 
 var http = require('http'),
-    widgets = require('./widgethtml.json');
+    widgets = require('./widgethtml.json'),
+    url = require("url");
 
   var server = http.createServer(function (request, response) {
     var data = '';
-    
+    var my_path = url.parse(request.url).pathname;  
+    console.log('mypath:'+my_path);
     console.log('Incoming Request', { url: request.url });
     
     request.on('data', function (chunk) {
