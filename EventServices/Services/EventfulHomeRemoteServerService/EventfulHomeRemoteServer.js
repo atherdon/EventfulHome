@@ -4,7 +4,7 @@ var http = require('http'),
     config = require('./serviceconfig.json'),
     extend = require('util')._extend;
 
-var cacheWidgets = extend({}, config.basewidgets);
+var cacheWidgets;
 var resourceJSONArray=[];
 
 exports.initializeService = function(client) {
