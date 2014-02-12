@@ -1,10 +1,10 @@
 //Example from here: http://blog.nodejitsu.com/a-simple-webservice-in-nodejs/
 var http = require('http'),
-    widgets = require('./widgethtml.json'),
     url = require("url"),
-    config = require('./serviceconfig.json');
+    config = require('./serviceconfig.json'),
+    extend = require('util')._extend;
 
-var widgetJSONArray=[];
+var cacheWidgets = extend({}, config.basewidgets);
 var resourceJSONArray=[];
 
 exports.initializeService = function(client) {
@@ -35,7 +35,7 @@ exports.initializeService = function(client) {
         {
             case '/getwidgets/':
             response.writeHead(200, { 'Content-Type': 'application/json' });
-            response.end(JSON.stringify(widgets));
+            response.end(JSON.stringify(cacheWidgets));
             break;
             
             case '/triggerevent/':
@@ -70,11 +70,11 @@ exports.initializeService = function(client) {
 };
 
 function updateOrAppendWidget(newWidget){
-    for(var i = widgetJSONArray.length - 1; i >= 0; i--) {
-        if(widgetJSONArray[i].name == newWidget.name)
-            widgetJSONArray.splice(i, 1);
+    for(var i = cacheWidgets.length - 1; i >= 0; i--) {
+        if(cacheWidgets[i].name == newWidget.name)
+            cacheWidgets.splice(i, 1);
     }
-    widgetJSONArray.push(newWidget);
+    cacheWidgets.push(newWidget);
 }
 
 function updateOrAppendResource(newResource){
