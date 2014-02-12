@@ -40,10 +40,10 @@ exports.initializeService = function(client) {
             
             case '/triggerevent/':
             request.on('end', function(){
+                console.log ('complete json:'+data);
                 var jsonEventObj=JSON.parse(data);
                 response.writeHead(200, { 'Content-Type': 'text/plain' });
                 response.end('triggered event');
-                console.log ('complete json:'+data);
                 client.publish(jsonEventObj.eventname,jsonEventObj.data);
             });
             break;
