@@ -70,6 +70,7 @@ exports.initializeService = function(client) {
 };
 
 function updateOrAppendWidget(newWidget){
+    console.log(cacheWidgets.length);
     for(var i = cacheWidgets.length - 1; i >= 0; i--) {
         if(cacheWidgets[i].name == newWidget.name)
             cacheWidgets.splice(i, 1);
