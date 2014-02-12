@@ -1,6 +1,6 @@
 {
-   "port": "20000",
-   "basewidgets": [
+   "httpport" : "20000",
+   "basewidgets" : [
         {
             "name": "quickf",
             "htmlstring": "<html><body>Special quick function 1<br><input type=button value='do' onClick='show()'></input><script type='text/javascript'>function show() { Android.showToast('tjo');}</script></body></html>"

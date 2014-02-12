@@ -64,7 +64,7 @@ exports.initializeService = function(client) {
         }
         
     });
-    server.listen(config.port);
+    server.listen(config.httpport);
     
     client.publish('/widgetrefreshrequested', {includeresources:'true'});
 };
