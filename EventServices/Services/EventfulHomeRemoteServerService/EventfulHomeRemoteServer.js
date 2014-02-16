@@ -6,6 +6,12 @@ var http = require('http'),
 
 var cacheWidgets = config.basewidgets;
 var resourceJSONArray=[];
+//TODO: - add stability to parser functionality
+//      - check if resources has to be devided into binary and text resources
+//      - add resource capability
+//      - handle css resources separately? "one for all"
+//      - refresh resource event?
+
 
 exports.initializeService = function(client) {
     

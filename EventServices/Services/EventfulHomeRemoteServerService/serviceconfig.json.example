@@ -20,6 +20,14 @@
         {
             "name": "something other",
             "htmlstring": "<html><body>Special misc function<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "quickadd",
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='diiooo' onClick='show()'></input><script type='text/javascript'>function show() { Android.triggerevent('/something','{}');}</script></body></html>"
+        },
+        {
+            "name": "quickadda",
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='dyyyooo' onClick='show()'></input><script type='text/javascript'>function show() { Android.triggerevent('/something','{\"roomnr\": \"3\"}');}</script></body></html>"
         }
     ]
 }
