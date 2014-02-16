@@ -1,0 +1,33 @@
+{
+    "httpport":"20000",
+    "basewidgets" : [
+        {
+            "name": "quickf",
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='do' onClick='show()'></input><script type='text/javascript'>function show() { Android.showToast('tjo');}</script></body></html>"
+        },
+        {
+            "name": "quickfs",
+            "htmlstring": "<html><body>Special quick function 2<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "quick32",
+            "htmlstring": "<html><body>Special quick function 3<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "bedroom",
+            "htmlstring": "<html><body>bedroom function<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "something other",
+            "htmlstring": "<html><body>Special misc function<br><input type=button value='do something'></input></body></html>"
+        },
+        {
+            "name": "quickadd",
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='diiooo' onClick='show()'></input><script type='text/javascript'>function show() { Android.triggerevent('/something','{}');}</script></body></html>"
+        },
+        {
+            "name": "quickadda",
+            "htmlstring": "<html><body>Special quick function 1<br><input type=button value='dyyyooo' onClick='show()'></input><script type='text/javascript'>function show() { Android.triggerevent('/something','{\"roomnr\": \"3\"}');}</script></body></html>"
+        }
+    ]
+}
