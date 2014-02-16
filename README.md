@@ -1,15 +1,14 @@
-homeauto
-========
+EventfulHome
+============
 
-Small node.js solution for home automation based on event driven architecture.
+Small node.js solution for creating a "smart home" based on event driven architecture.
 
 Work in progress:
-Consider separating "scenes" to separate services to create more generic services
+Separating "scenes" to config files to create more generic services
 Creating architecture overview picture
-Create basic services
 
 
-Mobile client design info here: 
+Mobile client (EventfulHomeRemote) design info here: 
 https://www.lucidchart.com/documents/view/4619-4718-528cac41-9187-128d0a004b21
 
 Raspberry-pi-insperation: 
