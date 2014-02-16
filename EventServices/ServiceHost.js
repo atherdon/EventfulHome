@@ -1,4 +1,5 @@
 // Run this node.js app on all machines included in the homeauto network
+
 // command line parameters determines if this system also should act as the pubsub-hub
 var stdio = require('stdio'),
     http = require('http'),
