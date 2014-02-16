@@ -1,3 +1,0 @@
-//Insperation:
-//  https://plot.ly/
-
