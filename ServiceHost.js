@@ -37,7 +37,7 @@ if (ops.localserver){ //
 }
 
 // dynamically load Services from /ActiveServices folder
-var servicespath=path_module.join(process.env.PWD, "EventServices/Services");
+var servicespath=path_module.join(process.env.PWD, "Services");
 var files = fs.readdirSync(servicespath);
 var servicefile;
 for(var i in files){
