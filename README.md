@@ -23,6 +23,7 @@ communication between client and node-services http://java.dzone.com/articles/ge
 
 
 nodejs to arduino-communication 
+try to use json for two way communication
 https://github.com/voodootikigod/node-serialport - use this package to communicate with arduino 
 Would it be possible to have two-way communication done in JSON (https://github.com/interactive-matter/aJson)
 basic example https://gist.github.com/reid/1544666
