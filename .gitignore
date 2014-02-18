@@ -16,3 +16,4 @@ node_modules
 EventServices/Services/*/service.js
 EventServices/Services/*/serviceconfig.json
 killc9.js
+EventfulHome.sublime-project

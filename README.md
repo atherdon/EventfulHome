@@ -11,8 +11,10 @@ Creating architecture overview picture
 Mobile client (EventfulHomeRemote) design info here: 
 https://www.lucidchart.com/documents/view/4619-4718-528cac41-9187-128d0a004b21
 
+
 Raspberry-pi-insperation: 
 http://www.makeuseof.com/tag/how-to-build-home-automation-system-raspberry-pi-and-arduino/
+
 
 Dashboard (/widget) (client) insperation: 
 http://ni-c.github.io/heimcontrol.js/plugins/arduino.html
