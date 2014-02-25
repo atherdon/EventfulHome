@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger>
+
+    <dataSet config="main" >
+        <source path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res" >
+            <file
+                name="drawer_list_item"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/layout/drawer_list_item.xml"
+                qualifiers=""
+                type="layout" />
+            <file
+                name="fragment_tag"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/layout/fragment_tag.xml"
+                qualifiers=""
+                type="layout" />
+            <file
+                name="activity_main"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/layout/activity_main.xml"
+                qualifiers=""
+                type="layout" />
+            <file
+                name="drawer_shadow"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-xhdpi/drawer_shadow.9.png"
+                qualifiers="xhdpi"
+                type="drawable" />
+            <file
+                name="ic_drawer"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-xhdpi/ic_drawer.png"
+                qualifiers="xhdpi"
+                type="drawable" />
+            <file
+                name="action_search"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-xhdpi/action_search.png"
+                qualifiers="xhdpi"
+                type="drawable" />
+            <file
+                name="ic_launcher"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-xhdpi/ic_launcher.png"
+                qualifiers="xhdpi"
+                type="drawable" />
+            <file
+                name="action_refresh"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-xhdpi/action_refresh.png"
+                qualifiers="xhdpi"
+                type="drawable" />
+            <file
+                name="ic_launcher"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-xxhdpi/ic_launcher.png"
+                qualifiers="xxhdpi"
+                type="drawable" />
+            <file
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/values/ids.xml"
+                qualifiers="" >
+                <item
+                    name="linlay"
+                    type="id"/>
+                <item
+                    name="linLayout"
+                    type="id">
+linLayout
+                </item>
+            </file>
+            <file
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/values/strings.xml"
+                qualifiers="" >
+                <string name="app_name" >Eventful home remote
+                </string>
+                <string name="action_refresh" >Refresh
+                </string>
+                <string name="drawer_open" >Open navigation drawer
+                </string>
+                <string name="drawer_close" >Close navigation drawer
+                </string>
+            </file>
+            <file
+                name="drawer_shadow"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-mdpi/drawer_shadow.9.png"
+                qualifiers="mdpi"
+                type="drawable" />
+            <file
+                name="ic_drawer"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-mdpi/ic_drawer.png"
+                qualifiers="mdpi"
+                type="drawable" />
+            <file
+                name="action_search"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-mdpi/action_search.png"
+                qualifiers="mdpi"
+                type="drawable" />
+            <file
+                name="ic_launcher"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-mdpi/ic_launcher.png"
+                qualifiers="mdpi"
+                type="drawable" />
+            <file
+                name="action_refresh"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-mdpi/action_refresh.png"
+                qualifiers="mdpi"
+                type="drawable" />
+            <file
+                name="drawer_shadow"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-hdpi/drawer_shadow.9.png"
+                qualifiers="hdpi"
+                type="drawable" />
+            <file
+                name="ic_drawer"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-hdpi/ic_drawer.png"
+                qualifiers="hdpi"
+                type="drawable" />
+            <file
+                name="action_search"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-hdpi/action_search.png"
+                qualifiers="hdpi"
+                type="drawable" />
+            <file
+                name="ic_launcher"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-hdpi/ic_launcher.png"
+                qualifiers="hdpi"
+                type="drawable" />
+            <file
+                name="action_refresh"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/drawable-hdpi/action_refresh.png"
+                qualifiers="hdpi"
+                type="drawable" />
+            <file
+                name="preferences"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/xml/preferences.xml"
+                qualifiers=""
+                type="xml" />
+            <file
+                name="main"
+                path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/menu/main.xml"
+                qualifiers=""
+                type="menu" />
+        </source>
+        <source path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/res/rs/debug" />
+        <source path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/res/generated/debug" />
+    </dataSet>
+    <dataSet config="debug" >
+        <source path="/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/debug/res" />
+    </dataSet>
+
+</merger>

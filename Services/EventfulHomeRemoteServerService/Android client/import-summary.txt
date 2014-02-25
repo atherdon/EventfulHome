@@ -1,0 +1,96 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Risky Project Location:
+-----------------------
+The tools *should* handle project locations in any directory. However,
+due to bugs, placing projects in directories containing spaces in the
+path, or characters like ", ' and &, have had issues. We're working to
+eliminate these bugs, but to save yourself headaches you may want to
+move your project to a location where this is not a problem.
+/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client
+                                                                         -      
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* EventfulHomeRemote.iml
+* out/
+* out/production/
+* out/production/EventfulHomeRemote/
+* out/production/EventfulHomeRemote/EventfulHomeRemote.apk
+* out/production/EventfulHomeRemote/EventfulHomeRemote.unaligned.apk
+* out/production/EventfulHomeRemote/se/
+* out/production/EventfulHomeRemote/se/eventfulhome/
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/BuildConfig.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$1.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$2.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$DrawerItemClickListener.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$SettingsFragment$1.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$SettingsFragment$2.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$SettingsFragment$3.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$SettingsFragment.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$TagFragment$1$1.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$TagFragment$1$2.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$TagFragment$1.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$TagFragment$2$1.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$TagFragment$2.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$TagFragment.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$WebAppInterface$1.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity$WebAppInterface.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/MainActivity.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$attr.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$drawable.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$id.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$layout.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$menu.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$string.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R$xml.class
+* out/production/EventfulHomeRemote/se/eventfulhome/eventfulhomeremote/R.class
+
+Replaced Jars with Dependencies:
+--------------------------------
+The importer recognized the following .jar files as third party
+libraries and replaced them with Gradle dependencies instead. This has
+the advantage that more explicit version information is known, and the
+libraries can be updated automatically. However, it is possible that
+the .jar file in your project was of an older version than the
+dependency we picked, which could render the project not compileable.
+You can disable the jar replacement in the import wizard and try again:
+
+android-support-v4.jar => com.android.support:support-v4:+
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => app/src/main/AndroidManifest.xml
+* res/ => app/src/main/res/
+* src/ => app/src/main/java/
+
+Old Build Tools:
+----------------
+The version of the build tools installed with your SDK is old. It
+should be at least version 19.0.1 to work well with the Gradle build
+system. To update it, open the Android SDK Manager, and install the
+highest available version of Tools > Android SDK Build-tools.
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- From: file:/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android%20client/app/src/main/res/values/ids.xml -->
+    <eat-comment />
+
+    <item name="linLayout" type="id">linLayout</item>
+    <item name="linlay" type="id"/>
+    <!-- From: file:/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android%20client/app/src/main/res/values/strings.xml -->
+    <eat-comment />
+
+    <string name="action_refresh">Refresh</string>
+    <string name="app_name">Eventful home remote</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="drawer_open">Open navigation drawer</string>
+
+</resources>

@@ -1,0 +1,270 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"git",
+				"Git: Custom Command"
+			],
+			[
+				"comm",
+				"Git: Commit"
+			],
+			[
+				"Package Control: instal",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: Insta",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Add Repository"
+			],
+			[
+				"Package Control: add",
+				"Package Control: Add Repository"
+			],
+			[
+				"",
+				"Set Syntax: JavaScript"
+			]
+		],
+		"width": 575.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"git ",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/CSSselect/node_modules/domutils/lib/querying.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/csprng/node_modules/sequin/lib/sequin.js",
+		"/home/jakob/homeauto/EventServices/Services/MusicService/SqueezeBoxRemoteService.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/csprng/node_modules/sequin/package.json",
+		"/home/jakob/homeauto/EventfulHomeRemote/.idea/compiler.xml",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/test/common.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/domhandler/test/cases/06-comment_in_script.json",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/domhandler/test/cases/13-comment_in_text.json",
+		"/home/jakob/homeauto/EventServices/Services/BalconyService/BalconyGardeningService.js",
+		"/home/jakob/homeauto/node_modules/faye/package.json",
+		"/home/jakob/homeauto/EventfulHomeRemote/res/values/ids.xml",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/index.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/test/Events/11-script_in_script.json",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/domhandler/test/cases/07-unescaped_in_style.json",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/lib/static.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/bl/node_modules/readable-stream/test/simple/test-stream2-large-read-stall.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/readable-stream/test/simple/test-stream2-readable-from-list.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/transform.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/CONTRIBUTING.md",
+		"/home/jakob/homeauto/EventServices/Services/TemplateService/config.json",
+		"/home/jakob/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/jakob/homeauto/EventServices/Services/HDMISwitchService/HDMISwitch.js",
+		"/home/jakob/homeauto/EventServices/Services/XBMCService/XBMC.js",
+		"/home/jakob/homeauto/README.md",
+		"/home/jakob/homeauto/EventServices/ServiceHost.js",
+		"/home/jakob/homeauto/EventServices/Services/LGReceiverService/LGReceiver.js",
+		"/home/jakob/homeauto/node_modules/stdio/LICENSE",
+		"/home/jakob/homeauto/AndroidClient/ServerProxy.java",
+		"/home/jakob/homeauto/EventfulHomeRemote/.idea/dictionaries/jakob.xml",
+		"/home/jakob/homeauto/EventfulHomeRemote/.idea/misc.xml",
+		"/home/jakob/homeauto/EventfulHomeRemote/.idea/scopes/scope_settings.xml",
+		"/home/jakob/homeauto/EventfulHomeRemote/.idea/copyright/profiles_settings.xml",
+		"/home/jakob/homeauto/EventServices/Services/TestService/TestLivingroomServices.js",
+		"/home/jakob/homeauto/EventServices/Services/TemplateService/BluetoothArduinoService.js",
+		"/home/jakob/homeauto/EventServices/Services/TemperatureLoggerService/creatingChart.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/test-replacements.js",
+		"/home/jakob/homeauto/EventfulHomeRemote/src/se/eventfulhome/eventfulhomeremote/MainActivity.java",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/hyperquest/example/many_request.js",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/typedarray/readme.markdown",
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/core-util-is/package.json",
+		"/home/jakob/.config/sublime-text-2/Packages/Default/Default (Linux).sublime-keymap",
+		"/home/jakob/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
+		"/home/jakob/.config/sublime-text-2/Packages/User/Preferences.sublime-settings"
+	],
+	"find":
+	{
+		"height": 25.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"hide",
+			"folders",
+			"hide"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 25.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git":
+	{
+		"height": 112.0
+	},
+	"project": "EventfulHome.sublime-project",
+	"replace":
+	{
+		"height": 46.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"git",
+				".gitignore"
+			],
+			[
+				"lg",
+				"EventServices/Services/LGReceiverService/LGReceiver.js"
+			],
+			[
+				"host",
+				"EventServices/ServiceHost.js"
+			],
+			[
+				"ba",
+				"EventServices/Services/BalconyService/BalconyGardeningService.js"
+			],
+			[
+				"xb",
+				"EventServices/Services/XBMCService/XBMC.js"
+			],
+			[
+				"hdmi",
+				"EventServices/Services/HDMISwitchService/HDMISwitch.js"
+			],
+			[
+				"x",
+				"EventServices/Services/XBMCService/XBMC.js"
+			],
+			[
+				"bal",
+				"EventServices/Services/BalconyService/BalconyGardeningService.js"
+			],
+			[
+				"read",
+				"README.md"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 291.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
