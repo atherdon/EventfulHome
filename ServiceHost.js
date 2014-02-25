@@ -43,14 +43,14 @@ if (ops.localserver){ //
             console.log('Connected - sending quick event:'+ops.quicksendevent+'\ndata:'+ops.quicksenddata);
             client.publish(ops.quicksendevent,JSON.parse(ops.quicksenddata));
             //Give some time for the event to be transmitted - then exit
-            setTimeout(function(){process.exit(1);}, 1000);
+            setTimeout(function(){process.exit(1);}, 300);
         });
     }
     client.connect();
 }
 
-// dynamically load Services from /ActiveServices folder
-var servicespath=path_module.join(process.env.PWD, "Services");
+// dynamically load Services from folders
+var servicespath=path_module.join(__dirname, "Services");
 var files = fs.readdirSync(servicespath);
 var servicefile;
 for(var i in files){
