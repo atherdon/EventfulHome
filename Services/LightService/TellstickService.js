@@ -4,7 +4,7 @@
 var exec = require('child_process').exec;
 
 var config = require('./serviceconfig.json');
-var tdtoolpath = '/var/lib/stickshift/52bc7df85004460774000158/app-root/data/670589/tdtool';
+var tdtoolpath = 'tdtool';
 var currentSubscriptions = ['lightsonsoft', 'lightsonbright', 'lightsoff', 'setspecificlight'];
 
 exports.initializeService = function(client) {
