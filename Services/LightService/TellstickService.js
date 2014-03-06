@@ -23,7 +23,7 @@ function executeLightCommand(commandtype, message){
     else{
         for (var i=0; i<config.roomlights.length; i++){
             if (message.roomnr == config.roomlights[i].roomnr){
-                //exec(tdtoolpath+' '+config.roomlights[i][commandtype], function (error, stdout, stderr) { console.log(stdout) });
+                exec(tdtoolpath+' '+config.roomlights[i][commandtype], function (error, stdout, stderr) { console.log(stdout) });
                 console.log(tdtoolpath+' '+config.roomlights[i][commandtype]);
                 break;
             }
