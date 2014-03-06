@@ -31,6 +31,10 @@ if (ops.localserver){ //
     bayeux = new faye.NodeAdapter({mount: '/', timeout: 45});
     bayeux.attach(server);
     server.listen(ops.port);
+    bayeux.on('subscribe', function (client_id, channel){
+        console.log('subscribed client_id:'+client_id+' channel:'+channel)});
+    bayeux.on('publish', function (client_id, channel, data){
+        console.log('published client_id:'+client_id+' channel:'+channel+' data:'+data)});
     //set local client
     client=bayeux.getClient();
 }else{
@@ -43,7 +47,7 @@ if (ops.localserver){ //
             console.log('Connected - sending quick event:'+ops.quicksendevent+'\ndata:'+ops.quicksenddata);
             client.publish(ops.quicksendevent,JSON.parse(ops.quicksenddata));
             //Give some time for the event to be transmitted - then exit
-            setTimeout(function(){process.exit(1);}, 300);
+            setTimeout(function(){process.exit(1);}, 300);  
         });
     }
     client.connect();
