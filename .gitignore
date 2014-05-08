@@ -17,3 +17,4 @@ Services/*/service.js
 Services/*/serviceconfig.json
 killc9.js
 EventfulHome.sublime-project
+node_modules/*
