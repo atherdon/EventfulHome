@@ -4,6 +4,34 @@
 		"selected_items":
 		[
 			[
+				"arduino",
+				"arduinoready"
+			],
+			[
+				"prin",
+				"println"
+			],
+			[
+				"dh",
+				"DHTlastCheck"
+			],
+			[
+				"dht",
+				"DHTlastCheck"
+			],
+			[
+				"si",
+				"sizeOfSignal"
+			],
+			[
+				"print",
+				"println"
+			],
+			[
+				"d",
+				"data"
+			],
+			[
 				"wid",
 				"widgetFile"
 			],
@@ -24,45 +52,24 @@
 	"buffers":
 	[
 		{
-			"file": "Services/PVRService/PVR.js",
+			"contents": "//Service for watering and monitoring a balcony garden - service listens to shortmanualwatering and should publish newsensorvalue, lowwaterleveldetected\n//Config should describe optimal water levels and warning levels. Service should be triggered by timer and send warning if water level in tank goes below critival level (config)\n/* \n    sensorread\n        type\n        source\n        value\n        datetime\n\n*/\nvar config = require('./serviceconfig.json');\n\nexports.initializeService = function(client) {\n    serialPort= new SerialPort(config.serialport, {\n        baudrate: 9600,\n         dataBits: 8, \n         parity: 'none', \n         stopBits: 1, \n         flowControl: false \n    });\n    \n    serialPort.on(\"open\", function () {\n        console.log(\"serialport open\");\n        arduinoready=true;\n        serialPort.on(\"close\", function(data) {\n            console.log(\"serialport closed\");\n            arduinoready=false;\n        });\n        serialPort.on(\"data\", function(data) {\n            console.log(\"from arduino:\"+data);\n            var res=data.split(\";\");\n            if (res.length<1) return; \n            switch (res[0]){\n            case \"SENSORREAD\":\n                var sensorJSONStr=\"{ type: '\"+res[1]+\"', source: '\"+res[2]+\"' value: '\"+res[3]+\"', datetime: '\"+Date.now()+\"'}\";\n                client.publish('/sensorread', JSON.parse(JSONStr));\n                break;\n            }\n        });\n\n        //set default sensorread freq - TODO: do sensor specific?\n        SendCommandToArduino(\"SETFREQ;*;10\");\n    });\n\n    client.subscribe('/manualwateringrequested', function(message){\n        console.log('performing manual watering');\n        SendCommandToArduino(\"WATER;*;\"+config.shortmanualwateringtime);   \n    });\n\n    //TODO: allow for sensor specific freq    \n    client.subscribe('/changedsensorreadfrequencyrequested', function(message){\n        console.log('setting sensor read frequency to read after (s): '+message.freq);\n        SendCommandToArduino(\"SETFREQ;*;\"+message.freq);  \n    });\n};\n\nfunction SendCommandToArduino(arduinoStr){\n    var arraytoholdcmd=[arduinoStr];\n}\n\nfunction SeqArduinoReq(postdataarray){\n    if (postdataarray.length<1 || !arduinoready) return;\n\n    var currentPost=postdataarray.shift();\n    console.log('sending command: '+arduinoStr);\n    serialPort.write(arduinoStr, function(err, results) {\n        console.log('err: ' + err);\n        console.log('results: ' + results);\n        //Wait for the ir command to be sent then send the next command (delay)\n        setTimeout( function (){\n            SeqArduInoReq(postdataarray);\n        }, 50);\n    });   \n}\n",
+			"file": "Services/BalconyService/BalconyGardeningService.js",
+			"file_size": 612,
+			"file_write_time": 130370265818131203,
 			"settings":
 			{
-				"buffer_size": 1502,
+				"buffer_size": 2623,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+			"contents": "{\n   \"sensorsupervisors\":[\n      {\n         \"sensortosupervise\":\"temp1\",\n         \"criticallowvalue\":\"0.4\",\n         \"lowvalue\":\"0.4\",\n         \"highvalue\":\"0.8\",\n         \"criticalhighvalue\":\"1.0\"\n      },\n      {\n         \"sensortosupervise\":\"humid1\",\n         \"criticallowvalue\":\"0.4\",\n         \"lowvalue\":\"0.4\",\n         \"highvalue\":\"0.8\",\n         \"criticalhighvalue\":\"1.0\"\n      }\n   ],\n   \"commandpath\":\"irsend\",\n   \"shortmanualwateringtime\":\"10\",\n   \"serialport\": \"/dev/ttyUSB0\",\n   \"baudrate\":\"9600\"\n}",
+			"file": "Services/BalconyService/serviceconfig.json.example",
+			"file_size": 995,
+			"file_write_time": 130370265818131203,
 			"settings":
 			{
-				"buffer_size": 4231,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "// Run this node.js app on all machines included in the homeauto network\n\n// command line parameters determines if this system also should act as the pubsub-hub\nvar stdio = require('stdio'),\n    http = require('http'),\n    fs = require('fs'),\n    path_module = require('path'),\n    faye = require('faye'),\n    client,\n    service_holder= [];\n\n//commandline options\nvar ops = stdio.getopt({\n    'localserver': {key: 'l', description: 'Run local pubhub server. Server and port information will be used by both server and services.'},\n    'serveraddress': {key: 's', args: 1, mandatory: true, description: 'Host address for the pubhub server. Eg localhost'},\n    'port': {key: 'p', args: 1, mandatory: true, description: 'The port for the pubhuv server. Eg 8080'},\n    'quicksend': {key: 'q', description: 'Only transmit an event and then exit.'},\n    'quicksendevent': {key: 'e', args: 1, description: 'The event that should be transmitted.'},\n    'quicksenddata': {key: 'd', args: 1, description: 'The event data that should be transmitted.'}   \n});\n//check for server address\nif (!ops.serveraddress || !ops.port){\n    ops.printHelp();\n    process.exit(1);\n}\n\n//Start a local pubhub server if requested and get a client-ref\nif (ops.localserver){ //\n    console.log(\"Start local pubhub server\");\n    var server = http.createServer(),\n    bayeux = new faye.NodeAdapter({mount: '/', timeout: 45});\n    bayeux.attach(server);\n    server.listen(ops.port);\n    //set local client\n    client=bayeux.getClient();\n}else{\n    //No local pubhub server - initialize client\n    client = new faye.Client('http://'+ops.serveraddress+\":\"+ops.port);\n\n    //check if we should just connect - transmitt and disconnect or if a long running service should be started\n    if (ops.quicksend){\n        client.bind('transport:up', function() {\n            console.log('Connected - sending quick event:'+ops.quicksendevent+'\\ndata:'+ops.quicksenddata);\n            client.publish(ops.quicksendevent,JSON.parse(ops.quicksenddata));\n            //Give some time for the event to be transmitted - then exit\n            setTimeout(function(){process.exit(1);}, 300);  \n        });\n    }\n    client.connect();\n}\n\n// dynamically load Services from folders\nvar servicespath=path_module.join(__dirname, \"Services\");\nvar files = fs.readdirSync(servicespath);\nvar servicefile;\nfor(var i in files){\n    servicefile=path_module.join(servicespath,files[i], \"service.js\");\n    if (!fs.existsSync(servicefile)) continue;\n    var module = require(servicefile);\n    module.initializeService(client);    // each Service is initialized and could have long running async \"processes\" active (eg arduino-serial-monitor)\n    service_holder[servicefile]=module;\n}\n\n",
-			"file": "ServiceHost.js",
-			"file_size": 2712,
-			"file_write_time": 130378321342242470,
-			"settings":
-			{
-				"buffer_size": 2714,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Services/LightService/TellstickService.js",
-			"settings":
-			{
-				"buffer_size": 1285,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Services/PVRService/widgets/humaxpvr.html",
-			"settings":
-			{
-				"buffer_size": 268081,
+				"buffer_size": 510,
 				"line_ending": "Unix"
 			}
 		}
@@ -70,9 +77,25 @@
 	"build_system": "",
 	"command_palette":
 	{
-		"height": 392.0,
+		"height": 327.0,
 		"selected_items":
 		[
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"ardui",
+				"Set Syntax: Arduino"
+			],
+			[
+				"arduino",
+				"Set Syntax: Arduino"
+			],
+			[
+				"set",
+				"Set Syntax: C"
+			],
 			[
 				"pus",
 				"Git: Push"
@@ -140,17 +163,31 @@
 	},
 	"file_history":
 	[
+		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/service.js",
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/.npmignore",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.gradle/1.10/taskArtifacts/fileSnapshots.bin",
+		"/home/jakob/EventfulHome/node_modules/faye/browser/faye-browser.js",
+		"/home/jakob/EventfulHome/Services/LivingroomService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/HDMISwitchService/samsung tv example",
+		"/home/jakob/EventfulHome/Services/YamahaReceiverService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/LivingroomService/ArduinoIRSendBySerial/IRSendBySerial.ino",
+		"/home/jakob/EventfulHome/node_modules/serialport/AUTHORS",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/settings.gradle",
+		"/home/jakob/EventfulHome/ServiceHost.js",
+		"/home/jakob/EventfulHome/Services/HDMISwitchService/arduino.ino",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
+		"/home/jakob/EventfulHome/Services/LightService/TellstickService.js",
+		"/home/jakob/EventfulHome/Services/PVRService/widgets/humaxpvr.html",
 		"/home/jakob/EventfulHome/Services/TestService/TestService.js",
 		"/home/jakob/EventfulHome/Services/TestService/service.js",
-		"/home/jakob/EventfulHome/ServiceHost.js",
 		"/home/jakob/EventfulHome/Services/RemoteWidgetService/humaxpvr.html",
 		"/home/jakob/EventfulHome/Services/oldHDMIservice/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/SamsungTVService/SamsungTVService.js",
 		"/home/jakob/EventfulHome/Services/RemoteWidgetService/HumaxPVR.html",
 		"/home/jakob/EventfulHome/Services/LightService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/LightService/TellstickService.js",
 		"/home/jakob/EventfulHome/Services/YamahaReceiverService/YamahaReceiver.js",
-		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
 		"/home/jakob/EventfulHome/Services/PVRService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/HDMISwitch.js",
@@ -223,6 +260,17 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			";",
+			"SeqHttpReq",
+			"serial.pr",
+			"serial.print",
+			"-",
+			" ",
+			"listen",
+			"serial",
+			"IRSIGNAL",
+			"IRSIGNAL;NEC;FFFFFFFF;0",
+			"IRSIGNAL;SAMSUNG;E0E008F7;32",
 			"cacheWidgets",
 			"resourceJSONArray",
 			"  ",
@@ -246,6 +294,12 @@
 		"regex": false,
 		"replace_history":
 		[
+			"\\n",
+			"SeqArduinoReq",
+			"",
+			",",
+			"SENDIR",
+			"",
 			" ",
 			"onclick",
 			"imagemap",
@@ -260,153 +314,67 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "Services/PVRService/PVR.js",
+					"file": "Services/BalconyService/BalconyGardeningService.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1502,
+						"buffer_size": 2623,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								874,
-								874
+								362,
+								362
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4231,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2069,
-								2069
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 816.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "ServiceHost.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2714,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2137,
-								2137
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 466.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "Services/LightService/TellstickService.js",
+					"buffer": 1,
+					"file": "Services/BalconyService/serviceconfig.json.example",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1285,
+						"buffer_size": 510,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1166,
-								1166
+								392,
+								392
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"tab_size": 4,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 3,
 							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 51.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "Services/PVRService/widgets/humaxpvr.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 268081,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								218,
-								218
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -414,11 +382,11 @@
 	],
 	"incremental_find":
 	{
-		"height": 25.0
+		"height": 34.0
 	},
 	"input":
 	{
-		"height": 33.0
+		"height": 35.0
 	},
 	"layout":
 	{
@@ -443,6 +411,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.ArduinoIRSendBySerial":
+	{
+		"height": 112.0
+	},
 	"output.find_results":
 	{
 		"height": 112.0
