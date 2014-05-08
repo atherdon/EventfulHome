@@ -1,0 +1,102 @@
+{
+   "scenes":[
+    	{
+	        "scene":"watchtvlivingroom",
+	        "commands":[
+		        {
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09966",
+		         	"bits":"32"
+		         
+		      	},
+		      	{
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09768",
+		         	"bits":"32"
+		         
+		      	}
+		    ]
+      	},
+    	{
+	        "scene":"watchmediapclivingroom",
+	        "commands":[
+		        {
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09966",
+		         	"bits":"32"
+		         
+		      	},
+		      	{
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09768",
+		         	"bits":"32"
+		         
+		      	}
+		    ]
+      	},
+    	{
+	        "scene":"playps3livingroom",
+	        "commands":[
+		        {
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09966",
+		         	"bits":"32"
+		         
+		      	},
+		      	{
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09768",
+		         	"bits":"32"
+		         
+		      	}
+		    ]
+      	},
+    	{
+	        "scene":"watchchromecastlivingroom",
+	        "commands":[
+		        {
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09966",
+		         	"bits":"32"
+		         
+		      	},
+		      	{
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09768",
+		         	"bits":"32"
+		         
+		      	}
+		    ]
+      	},
+    	{
+	        "scene":"watchskypelivingroom",
+	        "commands":[
+		        {
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E09966",
+		         	"bits":"32"
+		         
+		      	},
+		      	{
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E0A35C",
+		         	"bits":"32"
+		         
+		      	}
+		    ]
+      	},
+    	{
+	        "scene":"allmediaoff",
+	        "commands":[
+		        {
+		         	"irtype":"SAMSUNG",
+		         	"irsignal":"E0E019E6",
+		         	"bits":"32"
+		         
+		      	}
+		    ]
+      	}
+   ],
+   "serialport": "/dev/ttyUSB0",
+   "baudrate":"9600"
+}
