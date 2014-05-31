@@ -3,7 +3,7 @@
 
 var exec = require('child_process').exec,
 	config = require('./serviceconfig.json'),
-	path_module = require('path'),
+	path = require('path'),
 	fs = require('fs');
 
 exports.initializeService = function(client) {
@@ -30,14 +30,15 @@ exports.initializeService = function(client) {
 };
 
 function sendWidgets(client){
-	var widgetFile,
-		newWidgetJSON;
-	var widgetPath=path_module.join(__dirname, "widgets");
-	var files = fs.readdirSync(widgetPath);
-	for(var i in files){
-	    widgetFile=path_module.join(widgetPath,files[i]);
-		newWidgetJSON={ "name":files[i], "htmlstring":fs.readFileSync(widgetFile, "utf8")};
-		client.publish('/addwidget', newWidgetJSON);
-		console.log(JSON.stringify(newWidgetJSON));
-	}
+    var widgetFile,
+        newWidgetJSON,
+        widgetName;
+    var widgetPath=path.join(__dirname, "widgets");
+    var files = fs.readdirSync(widgetPath);
+    for(var i in files){
+        widgetName=files[i].substr(0,files[i].lastIndexOf('.'));
+        widgetFile=path.join(widgetPath,files[i]);
+        newWidgetJSON={ "name":widgetName, "htmlstring":fs.readFileSync(widgetFile, "utf8")};
+        client.publish('/addwidget', newWidgetJSON);
+    }
 }

@@ -1,45 +1,22 @@
 {
-   "HDMISignals":[
+   "sensorsupervisors":[
       {
-         "signal":"watchtvlivingroom",
-         "remote":"hdmiswitch",
-         "command":"hdmia1"
+         "sensortosupervise":"temp1",
+         "criticallowvalue":"0.4",
+         "lowvalue":"0.4",
+         "highvalue":"0.8",
+         "criticalhighvalue":"1.0"
       },
       {
-         "signal":"watchmediapclivingroom",
-         "remote":"hdmiswitch",
-         "command":"hdmia2"
-      },
-      {
-         "signal":"playps3livingroom",
-         "remote":"hdmiswitch",
-         "command":"hdmia3"
-      },
-      {
-         "signal":"watchchromecastlivingroom",
-         "remote":"hdmiswitch",
-         "command":"hdmia4"
-      },
-      {
-         "signal":"watchtvbedroom",
-         "remote":"hdmiswitch",
-         "command":"hdmib1"
-      },
-      {
-         "signal":"watchmediapcbedroom",
-         "remote":"hdmiswitch",
-         "command":"hdmib2"
-      },
-      {
-         "signal":"playps3bedroom",
-         "remote":"hdmiswitch",
-         "command":"hdmib3"
-      },
-      {
-         "signal":"watchchromecastbedroom",
-         "remote":"hdmiswitch",
-         "command":"hdmib4"
+         "sensortosupervise":"humid1",
+         "criticallowvalue":"0.4",
+         "lowvalue":"0.4",
+         "highvalue":"0.8",
+         "criticalhighvalue":"1.0"
       }
    ],
-   "commandpath":"irsend"
-}
+   "commandpath":"irsend",
+   "shortmanualwateringtime":"10",
+   "serialport": "/dev/ttyUSB0",
+   "baudrate":"9600"
+} 

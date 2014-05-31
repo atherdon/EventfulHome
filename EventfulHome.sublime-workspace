@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"wat",
+				"watchmediapclivingroom"
+			],
+			[
 				"arduino",
 				"arduinoready"
 			],
@@ -52,32 +56,35 @@
 	"buffers":
 	[
 		{
-			"contents": "//Service for watering and monitoring a balcony garden - service listens to shortmanualwatering and should publish newsensorvalue, lowwaterleveldetected\n//Config should describe optimal water levels and warning levels. Service should be triggered by timer and send warning if water level in tank goes below critival level (config)\n/* \n    sensorread\n        type\n        source\n        value\n        datetime\n\n*/\nvar config = require('./serviceconfig.json');\n\nexports.initializeService = function(client) {\n    serialPort= new SerialPort(config.serialport, {\n        baudrate: 9600,\n         dataBits: 8, \n         parity: 'none', \n         stopBits: 1, \n         flowControl: false \n    });\n    \n    serialPort.on(\"open\", function () {\n        console.log(\"serialport open\");\n        arduinoready=true;\n        serialPort.on(\"close\", function(data) {\n            console.log(\"serialport closed\");\n            arduinoready=false;\n        });\n        serialPort.on(\"data\", function(data) {\n            console.log(\"from arduino:\"+data);\n            var res=data.split(\";\");\n            if (res.length<1) return; \n            switch (res[0]){\n            case \"SENSORREAD\":\n                var sensorJSONStr=\"{ type: '\"+res[1]+\"', source: '\"+res[2]+\"' value: '\"+res[3]+\"', datetime: '\"+Date.now()+\"'}\";\n                client.publish('/sensorread', JSON.parse(JSONStr));\n                break;\n            }\n        });\n\n        //set default sensorread freq - TODO: do sensor specific?\n        SendCommandToArduino(\"SETFREQ;*;10\");\n    });\n\n    client.subscribe('/manualwateringrequested', function(message){\n        console.log('performing manual watering');\n        SendCommandToArduino(\"WATER;*;\"+config.shortmanualwateringtime);   \n    });\n\n    //TODO: allow for sensor specific freq    \n    client.subscribe('/changedsensorreadfrequencyrequested', function(message){\n        console.log('setting sensor read frequency to read after (s): '+message.freq);\n        SendCommandToArduino(\"SETFREQ;*;\"+message.freq);  \n    });\n};\n\nfunction SendCommandToArduino(arduinoStr){\n    var arraytoholdcmd=[arduinoStr];\n}\n\nfunction SeqArduinoReq(postdataarray){\n    if (postdataarray.length<1 || !arduinoready) return;\n\n    var currentPost=postdataarray.shift();\n    console.log('sending command: '+arduinoStr);\n    serialPort.write(arduinoStr, function(err, results) {\n        console.log('err: ' + err);\n        console.log('results: ' + results);\n        //Wait for the ir command to be sent then send the next command (delay)\n        setTimeout( function (){\n            SeqArduInoReq(postdataarray);\n        }, 50);\n    });   \n}\n",
-			"file": "Services/BalconyService/BalconyGardeningService.js",
-			"file_size": 612,
-			"file_write_time": 130370265818131203,
+			"file": "Services/BalconyService/serviceconfig.json.example",
 			"settings":
 			{
-				"buffer_size": 2623,
+				"buffer_size": 511,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"contents": "{\n   \"sensorsupervisors\":[\n      {\n         \"sensortosupervise\":\"temp1\",\n         \"criticallowvalue\":\"0.4\",\n         \"lowvalue\":\"0.4\",\n         \"highvalue\":\"0.8\",\n         \"criticalhighvalue\":\"1.0\"\n      },\n      {\n         \"sensortosupervise\":\"humid1\",\n         \"criticallowvalue\":\"0.4\",\n         \"lowvalue\":\"0.4\",\n         \"highvalue\":\"0.8\",\n         \"criticalhighvalue\":\"1.0\"\n      }\n   ],\n   \"commandpath\":\"irsend\",\n   \"shortmanualwateringtime\":\"10\",\n   \"serialport\": \"/dev/ttyUSB0\",\n   \"baudrate\":\"9600\"\n}",
-			"file": "Services/BalconyService/serviceconfig.json.example",
-			"file_size": 995,
-			"file_write_time": 130370265818131203,
+			"contents": "sudo nano /etc/init.d/nodejs.sh\n\n\n\n\n\n#!/bin/bash\nexport PATH=$PATH:/opt/node/bin\nexport NODE_PATH=$NODE_PATH:/opt/node/lib/node_modules\nexport HOME=/home/pi\nexport EHSERVER=192.168.1.5\nexport EHPORT=16005\n\ncase \"$1\" in\n  start)\n    exec /opt/node/bin/forever -l $HOME/.forever/nodejs.forever.log -o $HOME/.forever/nodejs.output.log -e $HOME/.forever/nodejs.error.log -p $HOME/.forever --sourceDir=$HOME/EventfulHome/ ServiceHost.js -s $EHSERVER -p $EHPORT &\n    ;;\n  stop)\n    exec /opt/node/bin/forever stopall\n    ;;\n  *)\n\n  echo \"Usage: /etc/init.d/nodejs.sh {start|stop}\"\n  exit 1\n  ;;\nesac\nexit 0\n\n\n\n\n\n\nstart on startup\nexec forever -l /home/xbmc/.forever/nodejs.forever.log -o /home/xbmc/.forever/nodejs.output.log -e /home/xbmc/.forever/nodejs.error.log -p /home/xbmc/.forever --sourceDir=/home/xbmc/EventfulHome/ ServiceHost.js -s localhost -p 16005 -l &",
 			"settings":
 			{
-				"buffer_size": 510,
+				"buffer_size": 862,
+				"line_ending": "Unix",
+				"name": "sudo nano /etc/init.d/nodejs.sh"
+			}
+		},
+		{
+			"file": "/home/jakob/media/download/hyperion.config.json",
+			"settings":
+			{
+				"buffer_size": 20792,
 				"line_ending": "Unix"
 			}
 		}
 	],
-	"build_system": "",
+	"build_system": "Packages/User/eventfulhome.sublime-build",
 	"command_palette":
 	{
-		"height": 327.0,
+		"height": 392.0,
 		"selected_items":
 		[
 			[
@@ -141,7 +148,7 @@
 				"Package Control: Add Repository"
 			]
 		],
-		"width": 467.0
+		"width": 602.0
 	},
 	"console":
 	{
@@ -163,6 +170,12 @@
 	},
 	"file_history":
 	[
+		"/home/jakob/Dropbox/Development/arduino/boblights/*",
+		"/home/jakob/.config/sublime-text-3/Packages/User/eventfulhome.sublime-build",
+		"/home/jakob/EventfulHome/Services/BalconyService/BalconyGardeningService.js",
+		"/home/jakob/EventfulHome/ServiceHost.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/serviceconfig.json",
+		"/home/jakob/EventfulHome/.gitignore",
 		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/service.js",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/.npmignore",
@@ -174,7 +187,6 @@
 		"/home/jakob/EventfulHome/Services/LivingroomService/ArduinoIRSendBySerial/IRSendBySerial.ino",
 		"/home/jakob/EventfulHome/node_modules/serialport/AUTHORS",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/settings.gradle",
-		"/home/jakob/EventfulHome/ServiceHost.js",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/arduino.ino",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
 		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
@@ -196,7 +208,6 @@
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemote/res/menu/main.xml",
 		"/home/jakob/EventfulHome/Services/BalconyService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/TemplateService/config.json",
-		"/home/jakob/EventfulHome/.gitignore",
 		"/home/jakob/EventfulHome/README.md",
 		"/home/jakob/EventfulHome/.idea/workspace.xml",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/CSSselect/node_modules/domutils/lib/querying.js",
@@ -260,6 +271,10 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"100px",
+			"cacheWidgets",
+			"folders",
+			"__dirname",
 			";",
 			"SeqHttpReq",
 			"serial.pr",
@@ -294,6 +309,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"90px",
 			"\\n",
 			"SeqArduinoReq",
 			"",
@@ -314,54 +330,24 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "Services/BalconyService/BalconyGardeningService.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2623,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								362,
-								362
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
 					"file": "Services/BalconyService/serviceconfig.json.example",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 510,
+						"buffer_size": 511,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								392,
-								392
+								511,
+								511
 							]
 						],
 						"settings":
@@ -374,7 +360,169 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 862,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								862,
+								862
+							]
+						],
+						"settings":
+						{
+							"auto_name": "sudo nano /etc/init.d/nodejs.sh",
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
 					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/home/jakob/media/download/hyperion.config.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 20792,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 11050.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
@@ -414,6 +562,10 @@
 	"output.ArduinoIRSendBySerial":
 	{
 		"height": 112.0
+	},
+	"output.exec":
+	{
+		"height": 220.0
 	},
 	"output.find_results":
 	{
@@ -496,7 +648,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 277.0,
+	"side_bar_width": 197.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
