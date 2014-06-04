@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"buff",
+				"Buffer(subject, encoding, offset);"
+			],
+			[
+				"write",
+				"fs.write(fd, buffer, offset, length, position, callback);"
+			],
+			[
 				"wat",
 				"watchmediapclivingroom"
 			],
@@ -56,10 +64,32 @@
 	"buffers":
 	[
 		{
-			"file": "Services/BalconyService/serviceconfig.json.example",
+			"contents": "//Example from here: http://blog.nodejitsu.com/a-simple-webservice-in-nodejs/\nvar http = require('http'),\n    url = require(\"url\"),\n    path = require('path'),\n    fs = require('fs'),\n    config = require('./serviceconfig.json'),\n    extend = require('util')._extend,\n    cacheWidgets = JSON.parse(\"[]\"),\n    resourceJSONArray=[],\n    extensions = {\n        \".html\" : \"text/html\",\n        \".css\" : \"text/css\",\n        \".js\" : \"application/javascript\",\n        \".png\" : \"image/png\",\n        \".gif\" : \"image/gif\",\n        \".jpg\" : \"image/jpeg\",\n        \".jpeg\" : \"image/jpeg\"\n    };\n\n//TODO: - add stability to parser functionality\n//      - check if resources has to be devided into binary and text resources\n//      - add resource capability\n//      - handle css resources separately? \"one for all\"\n//      - refresh resource event?\n\n\nexports.initializeService = function(client) {\n    \n    if (config.clearresourcesonstartup==\"true\"){\n        fs.readdirSync(path.join(__dirname, \"resourcecache\")).forEach(function(fileName) {\n            console.log(\"removing cached files\");\n            fs.unlinkSync(path.join(__dirname, \"resourcecache\",fileName));\n        });\n    }\n\n    client.subscribe('/addwidget', function(widget){\n        console.log('widget added:'+widget.name);\n        updateOrAppendWidget(widget);\n    });\n    \n    client.subscribe('/addresource', function(resource){\n        console.log('resource added:'+resource.filename);\n        updateOrAppendResource(resource);\n    });\n\n    //listen for requests to refresh resources and widgets\n    client.subscribe('/widgetrefreshrequested', function(message){\n        console.log(\"refresh requested\");\n        sendWidgets(client);\n        if (message.includeresources)\n            sendResources(client);    \n    });\n        \n    var server = http.createServer(function (request, response) {\n        var data = '';\n        var my_path = url.parse(request.url).pathname; \n        var resourceFile,resourcelocation, ext;\n        \n        request.on('data', function (chunk) {\n          data += chunk;\n        });\n    \n        switch(my_path)\n        {\n            case '/getwidgets/':\n            response.writeHead(200, { 'Content-Type': 'application/json' });\n            response.end(JSON.stringify(cacheWidgets));\n            break;\n            \n            case '/triggerevent/':\n            request.on('end', function(){\n                console.log ('complete json:'+data);\n                var jsonEventObj=JSON.parse(data);\n                \n                response.writeHead(200, { 'Content-Type': 'text/plain' });\n                response.end('triggered event');\n                client.publish(jsonEventObj.eventname,JSON.parse(jsonEventObj.data));\n            });\n            break;\n            \n            //TODO: is this required by android client? - dynamic creation of widgets? - use case?\n            case '/addwidget/':\n            request.on('end', function(){\n                var jsonEventObj=JSON.parse(data);\n                response.writeHead(200, { 'Content-Type': 'text/plain' });\n                response.end('added widget');\n                updateOrAppendWidget(jsonEventObj);\n            });\n            break;\n            \n            default:\n            if (my_path.match(/\\/resources\\//g)){\n                resourceFile=request.url.substring(request.url.lastIndexOf('/')+1);\n                ext = path.extname(resourceFile);\n                console.log(\"resource requested:\"+resourceFile);\n\n                if(!extensions[ext]){\n                    //for now just send a 404 and a short message\n                    response.writeHead(404, {'Content-Type': 'text/html'});\n                    response.end(\"<html><head></head><body>The requested file type is not supported</body></html>\");\n                    console.log(\"non supported file type\");\n                }else{\n                    resourcelocation=path.join(__dirname, \"resourcecache\",resourceFile);\n                    console.log('resourcelocation:'+resourcelocation);\n                    getFile(resourcelocation,response,extensions[ext]);\n                };\n                \n            }else{\n                response.writeHead(501, { 'Content-Type': 'text/html' });\n                response.end('wrong url');\n            };\n        }\n        \n    }).listen(config.httpport);\n    \n    setTimeout(function(){client.publish('/widgetrefreshrequested', {includeresources:'true'});},3000);\n};\n\nfunction updateOrAppendWidget(newWidget){\n    for(var i = cacheWidgets.length - 1; i >= 0; i--) {\n        if(cacheWidgets[i].name == newWidget.name)\n            cacheWidgets.splice(i, 1);\n    }\n    cacheWidgets.push(newWidget);\n}\n\nfunction updateOrAppendResource(newResource){\n    var resourcePath=path.join(__dirname, \"resourcecache\", newResource.filename);\n    fs.writeFile(resourcePath, new Buffer(newResource.filecontent, 'base64'));\n    console.log('writing to file'+resourcePath);\n}\n    \nfunction sendWidgets(client){\n    var widgetFile,\n        newWidgetJSON,\n        widgetName;\n    var widgetPath=path.join(__dirname, \"widgets\");\n    var files = fs.readdirSync(widgetPath);\n    for(var i in files){\n        widgetName=files[i].substr(0,files[i].lastIndexOf('.'));\n        widgetFile=path.join(widgetPath,files[i]);\n        newWidgetJSON={ \"name\":widgetName, \"htmlstring\":fs.readFileSync(widgetFile, \"utf8\")};\n        client.publish('/addwidget', newWidgetJSON);\n    }\n}\n\nfunction sendResources(client){\n    var resourceFile,\n        newResourceJSON;\n    var resourcePath=path.join(__dirname, \"widgets\",\"resources\");\n    var files = fs.readdirSync(resourcePath);\n    for(var i in files){\n        resourceFile=path.join(resourcePath,files[i]);\n        console.log('trying to send:'+resourceFile);\n        newResourceJSON={ \"filename\":files[i], \"filecontent\":new Buffer(fs.readFileSync(resourceFile) || '').toString('base64')};\n        client.publish('/addresource', newResourceJSON);\n        console.log(\"new resource added:\"+files[i]);\n    }\n}\n\n\n//helper function handles file verification\nfunction getFile(filePath,res,mimeType){\n    //does the requested file exist?\n    fs.exists(filePath,function(exists){\n        //if it does...\n        if(exists){\n            //read the file, run the anonymous function\n            fs.readFile(filePath,function(err,contents){\n                if(!err){\n                    //if there was no error\n                    //send the contents with the default 200/ok header\n                    res.writeHead(200,{\n                        \"Content-type\" : mimeType,\n                        \"Content-Length\" : contents.length\n                    });\n                    res.end(contents);\n                } else {\n                    //for our own troubleshooting\n                    console.dir(err);\n                };\n            });\n        } else {\n            //if the requested file was not found\n            //serve-up our custom 404 page\n            res.writeHead(404, {'Content-Type': 'text/html'});\n            res.end(\"<html><head></head><body>Cannot find the requested file</body></html>\");\n        };\n    });\n};",
+			"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+			"file_size": 7457,
+			"file_write_time": 130460142079372515,
 			"settings":
 			{
-				"buffer_size": 511,
+				"buffer_size": 7103,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Services/EventfulHomeRemoteServerService/widgets/balcony.html",
+			"settings":
+			{
+				"buffer_size": 230,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "<html>\n<script></script><body><b>Quick events</b><br><input type=button value='Watch TV Livingroom' style='height: 90px; width: 100%' onClick='watchtvlivingroom()'></input><br><br><input type=button value='Watch MediaPC Livingroom' style='height: 90px; width: 100%' onClick='watchmediapclivingroom()'></input><br><br><input type=button value='Play PS3 Livingroom' style='height: 90px; width: 100%' onClick='playps3livingroom()'></input><br><br><input type=button value='Watch Skype Livingroom' style='height: 90px; width: 100%' onClick='watchskypelivingroom()'></input><br><br><input type=button value='All media OFF livingroom' style='height: 90px; width: 100%' onClick='allmediaofflivingroom()'></input>    <script type='text/javascript'>function watchtvlivingroom() { Android.triggerevent('/watchtvlivingroom','{\\\"foo\\\": \\\"bar\\\"}');}   function watchmediapclivingroom() { Android.triggerevent('/watchmediapclivingroom','{\\\"foo\\\": \\\"bar\\\"}');}      function playps3livingroom() { Android.triggerevent('/playps3livingroom','{\\\"foo\\\": \\\"bar\\\"}');}      function watchskypelivingroom() { Android.triggerevent('/watchskypelivingroom','{\\\"foo\\\": \\\"bar\\\"}');}      function allmediaofflivingroom() { Android.triggerevent('/allmediaofflivingroom','{\\\"foo\\\": \\\"bar\\\"}');}   </script></body></html>",
+			"file": "Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
+			"file_size": 1290,
+			"file_write_time": 130460032729951858,
+			"settings":
+			{
+				"buffer_size": 1291,
 				"line_ending": "Unix"
 			}
 		},
@@ -79,17 +109,46 @@
 				"buffer_size": 20792,
 				"line_ending": "Unix"
 			}
+		},
+		{
+			"contents": "wget --user=xbmc --password=gra97ka 'http://jakemedia:8080/jsonrpc?request={\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"script.doorbell\"}}'\n\n\n\n?? http://xbmc:gra97ka@jakemedia:8080/jsonrpc?request={\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"script.doorbell\"}}\n\n\nhttp://jakemedia:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22id%22:1,%22method%22:%22Addons.ExecuteAddon%22,%22params%22:{%22addonid%22:%22script.doorbell%22}}\n\nvlc http://admin:gra97ka@192.168.1.42:80/video/mjpg.cgi\n\n",
+			"settings":
+			{
+				"buffer_size": 548,
+				"line_ending": "Unix",
+				"name": "wget --user=xbmc --password=gra97ka 'http://jakeme"
+			}
 		}
 	],
 	"build_system": "Packages/User/eventfulhome.sublime-build",
 	"command_palette":
 	{
-		"height": 392.0,
+		"height": 54.0,
 		"selected_items":
 		[
 			[
+				"forma",
+				"Format Code"
+			],
+			[
 				"install",
 				"Package Control: Install Package"
+			],
+			[
+				"rein",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"reinde",
+				"Indentation: Reindent Lines"
+			],
+			[
+				"html",
+				"Set Syntax: HTML"
+			],
+			[
+				"javasc",
+				"Set Syntax: JavaScript"
 			],
 			[
 				"ardui",
@@ -170,44 +229,109 @@
 	},
 	"file_history":
 	[
+		"/home/jakob/EventfulHome/Services/HDMISwitchService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/xml/preferences.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/values/ids.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/libraries/Gradle__support_v4_19_0_1.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/libraries/Gradle__support_v4_19_0_1.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/res/all/debug/menu/main.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/app.iml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/workspace.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/vcs.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/gradle.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/encodings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/compiler.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/app/app.iml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/workspace.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/vcs.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/gradle.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/encodings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/compiler.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/res/all/debug/layout/drawer_list_item.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/menu/main.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/libraries/support_v4_19_0_1.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/incremental/mergeResources/debug/merger.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/incremental/mergeAssets/debug/merger.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/manifests/debug/AndroidManifest.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/AndroidManifest.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/modules.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/misc.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/modules.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/misc.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/values/strings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/scopes/scope_settings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/copyright/profiles_settings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/scopes/scope_settings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/copyright/profiles_settings.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/Android client.iml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/res/all/debug/layout/activity_main.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/layout/drawer_list_item.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/layout/activity_main.xml",
+		"/home/jakob/EventfulHome/Services/HDMISwitchService/samsung tv example",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServerService.iml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/build/res/all/debug/layout/fragment_tag.xml",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/layout/fragment_tag.xml",
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/faye-websocket/examples/ws.html",
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/faye-websocket/examples/sse.html",
+		"/home/jakob/EventfulHome/Services/RemoteWidgetService/humaxpvr (copy).html",
+		"/home/jakob/EventfulHome/Services/PVRService/widgets/humaxpvr.html",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/livingroom1.html",
+		"/home/jakob/EventfulHome/Services/RemoteWidgetService/humaxpvr.html",
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/faye-websocket/node_modules/websocket-driver/lib/websocket/driver/http_parser.js",
+		"/home/jakob/EventfulHome/Services/HDMISwitchService/HDMISwitch.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/serviceconfig.json",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resourcecache/somejs.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resources/tada.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resourcecache/tada.js",
+		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/balcony.html",
+		"/home/jakob/EventfulHome/ServiceHost.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/service.js",
+		"/home/jakob/EventfulHome/Services/TestService/TestService.js",
+		"/home/jakob/EventfulHome/Services/TemplateService/SensorService.js",
+		"/home/jakob/EventfulHome/Services/TemplateService/ArduinoService.js",
+		"/home/jakob/EventfulHome/Services/LightService/TellstickService.js",
+		"/home/jakob/EventfulHome/Services/TestService/ListeningTestService.js",
+		"/home/jakob/EventfulHome/Services/BalconyService/BalconyGardeningService.js",
+		"/home/jakob/EventfulHome/Services/TemplateService/BluetoothArduinoService.js",
+		"/home/jakob/EventfulHome/Services/MusicService/SqueezeBoxRemoteService.js",
+		"/home/jakob/EventfulHome/Services/PVRService/serviceconfig.json",
+		"/home/jakob/EventfulHome/Services/KitchenService/KitchenTempSensorService.js",
+		"/home/jakob/EventfulHome/Services/BalconyService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/LGReceiverService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/LightService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/LivingroomService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/MusicService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/PVRService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/YamahaReceiverService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/TestService/TestLivingroomServices.js",
+		"/home/jakob/EventfulHome/Services/XBMCService/XBMC.js",
+		"/home/jakob/EventfulHome/Services/TemplateService/config.json",
+		"/home/jakob/EventfulHome/Services/LGReceiverService/LGReceiver.js",
+		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
+		"/home/jakob/EventfulHome/Services/TemperatureLoggerService/creatingChart.js",
+		"/home/jakob/EventfulHome/Services/YamahaReceiverService/YamahaReceiver.js",
+		"/home/jakob/media/download/script.doorbell/addon.xml",
+		"/home/jakob/media/download/script.doorbell/doorbell.py",
+		"/home/jakob/media/Videos/Other Media/axelwebcam.strm",
 		"/home/jakob/Dropbox/Development/arduino/boblights/*",
 		"/home/jakob/.config/sublime-text-3/Packages/User/eventfulhome.sublime-build",
-		"/home/jakob/EventfulHome/Services/BalconyService/BalconyGardeningService.js",
-		"/home/jakob/EventfulHome/ServiceHost.js",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/serviceconfig.json",
 		"/home/jakob/EventfulHome/.gitignore",
-		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/service.js",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/.npmignore",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.gradle/1.10/taskArtifacts/fileSnapshots.bin",
 		"/home/jakob/EventfulHome/node_modules/faye/browser/faye-browser.js",
-		"/home/jakob/EventfulHome/Services/LivingroomService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/HDMISwitchService/samsung tv example",
-		"/home/jakob/EventfulHome/Services/YamahaReceiverService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/LivingroomService/ArduinoIRSendBySerial/IRSendBySerial.ino",
 		"/home/jakob/EventfulHome/node_modules/serialport/AUTHORS",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/settings.gradle",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/arduino.ino",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
-		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
-		"/home/jakob/EventfulHome/Services/LightService/TellstickService.js",
-		"/home/jakob/EventfulHome/Services/PVRService/widgets/humaxpvr.html",
-		"/home/jakob/EventfulHome/Services/TestService/TestService.js",
 		"/home/jakob/EventfulHome/Services/TestService/service.js",
-		"/home/jakob/EventfulHome/Services/RemoteWidgetService/humaxpvr.html",
 		"/home/jakob/EventfulHome/Services/oldHDMIservice/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/SamsungTVService/SamsungTVService.js",
 		"/home/jakob/EventfulHome/Services/RemoteWidgetService/HumaxPVR.html",
-		"/home/jakob/EventfulHome/Services/LightService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/YamahaReceiverService/YamahaReceiver.js",
-		"/home/jakob/EventfulHome/Services/PVRService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/HDMISwitchService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/HDMISwitchService/HDMISwitch.js",
-		"/home/jakob/EventfulHome/Services/TestService/TestLivingroomServices.js",
-		"/home/jakob/EventfulHome/Services/TestService/ListeningTestService.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemote/res/menu/main.xml",
-		"/home/jakob/EventfulHome/Services/BalconyService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/TemplateService/config.json",
 		"/home/jakob/EventfulHome/README.md",
 		"/home/jakob/EventfulHome/.idea/workspace.xml",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/CSSselect/node_modules/domutils/lib/querying.js",
@@ -232,27 +356,7 @@
 		"/home/jakob/homeauto/EventServices/Services/TemplateService/config.json",
 		"/home/jakob/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
 		"/home/jakob/homeauto/EventServices/Services/HDMISwitchService/HDMISwitch.js",
-		"/home/jakob/homeauto/EventServices/Services/XBMCService/XBMC.js",
-		"/home/jakob/homeauto/README.md",
-		"/home/jakob/homeauto/EventServices/ServiceHost.js",
-		"/home/jakob/homeauto/EventServices/Services/LGReceiverService/LGReceiver.js",
-		"/home/jakob/homeauto/node_modules/stdio/LICENSE",
-		"/home/jakob/homeauto/AndroidClient/ServerProxy.java",
-		"/home/jakob/homeauto/EventfulHomeRemote/.idea/dictionaries/jakob.xml",
-		"/home/jakob/homeauto/EventfulHomeRemote/.idea/misc.xml",
-		"/home/jakob/homeauto/EventfulHomeRemote/.idea/scopes/scope_settings.xml",
-		"/home/jakob/homeauto/EventfulHomeRemote/.idea/copyright/profiles_settings.xml",
-		"/home/jakob/homeauto/EventServices/Services/TestService/TestLivingroomServices.js",
-		"/home/jakob/homeauto/EventServices/Services/TemplateService/BluetoothArduinoService.js",
-		"/home/jakob/homeauto/EventServices/Services/TemperatureLoggerService/creatingChart.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/test-replacements.js",
-		"/home/jakob/homeauto/EventfulHomeRemote/src/se/eventfulhome/eventfulhomeremote/MainActivity.java",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/hyperquest/example/many_request.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/typedarray/readme.markdown",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/core-util-is/package.json",
-		"/home/jakob/.config/sublime-text-2/Packages/Default/Default (Linux).sublime-keymap",
-		"/home/jakob/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
-		"/home/jakob/.config/sublime-text-2/Packages/User/Preferences.sublime-settings"
+		"/home/jakob/homeauto/EventServices/Services/XBMCService/XBMC.js"
 	],
 	"find":
 	{
@@ -271,6 +375,22 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"console.log",
+			"widget added",
+			"base64",
+			"base",
+			"page404",
+			"path_module",
+			"resourceloc",
+			"exist",
+			"addwidget",
+			"widget",
+			"base",
+			"cachewidgets",
+			"path_modu",
+			"path_module",
+			"widgetrefreshrequested",
+			"%22",
 			"100px",
 			"cacheWidgets",
 			"folders",
@@ -309,6 +429,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"resource",
+			"\"",
 			"90px",
 			"\\n",
 			"SeqArduinoReq",
@@ -335,29 +457,133 @@
 			[
 				{
 					"buffer": 0,
-					"file": "Services/BalconyService/serviceconfig.json.example",
+					"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 511,
+						"buffer_size": 7103,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								511,
-								511
+								5563,
+								5563
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage",
-							"tab_size": 3,
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2295.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
@@ -365,6 +591,166 @@
 				},
 				{
 					"buffer": 1,
+					"file": "Services/EventfulHomeRemoteServerService/widgets/balcony.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 230,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								230,
+								230
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1291,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7,
+								7
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
 					"semi_transient": false,
 					"settings":
 					{
@@ -375,8 +761,8 @@
 						"selection":
 						[
 							[
-								862,
-								862
+								218,
+								218
 							]
 						],
 						"settings":
@@ -494,11 +880,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 4,
 					"file": "/home/jakob/media/download/hyperion.config.json",
 					"semi_transient": false,
 					"settings":
@@ -510,8 +896,8 @@
 						"selection":
 						[
 							[
-								0,
-								0
+								20792,
+								20792
 							]
 						],
 						"settings":
@@ -519,10 +905,142 @@
 							"syntax": "Packages/JavaScript/JSON.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 11050.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 548,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								548,
+								548
+							]
+						],
+						"settings":
+						{
+							"auto_name": "wget --user=xbmc --password=gra97ka 'http://jakeme",
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
@@ -587,6 +1105,10 @@
 		"selected_items":
 		[
 			[
+				"service.js",
+				"Services/EventfulHomeRemoteServerService/service.js"
+			],
+			[
 				"git",
 				".gitignore"
 			],
@@ -648,7 +1170,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 197.0,
+	"side_bar_width": 298.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

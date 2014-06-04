@@ -53,8 +53,6 @@ if (ops.localserver){ //
     client.connect();
 }
 
-console.log(__dirname);
-
 // dynamically load Services from folders
 var servicespath=path_module.join(__dirname, "Services");
 var files = fs.readdirSync(servicespath);

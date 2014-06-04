@@ -1,4 +1,7 @@
-//Example from here: http://blog.nodejitsu.com/a-simple-webservice-in-nodejs/
+//TODO: - add stability to parser functionality
+//      - handle css resources separately? "one for all"
+// bug: why is resources triggered two times
+
 var http = require('http'),
     url = require("url"),
     path = require('path'),
@@ -17,18 +20,10 @@ var http = require('http'),
         ".jpeg" : "image/jpeg"
     };
 
-//TODO: - add stability to parser functionality
-//      - check if resources has to be devided into binary and text resources
-//      - add resource capability
-//      - handle css resources separately? "one for all"
-//      - refresh resource event?
-
-
 exports.initializeService = function(client) {
     
     if (config.clearresourcesonstartup=="true"){
         fs.readdirSync(path.join(__dirname, "resourcecache")).forEach(function(fileName) {
-            console.log("removing cached files");
             fs.unlinkSync(path.join(__dirname, "resourcecache",fileName));
         });
     }
@@ -45,7 +40,6 @@ exports.initializeService = function(client) {
 
     //listen for requests to refresh resources and widgets
     client.subscribe('/widgetrefreshrequested', function(message){
-        console.log("refresh requested");
         sendWidgets(client);
         if (message.includeresources)
             sendResources(client);    
@@ -110,10 +104,12 @@ exports.initializeService = function(client) {
                 response.end('wrong url');
             };
         }
-        
     }).listen(config.httpport);
     
-    setTimeout(function(){client.publish('/widgetrefreshrequested', {includeresources:'true'});},3000);
+    //Wait for other services to startup before sending request for widgetrefresh
+    setTimeout(function(){
+        client.publish('/widgetrefreshrequested', {includeresources:'true'});
+    },500);
 };
 
 function updateOrAppendWidget(newWidget){
@@ -127,7 +123,6 @@ function updateOrAppendWidget(newWidget){
 function updateOrAppendResource(newResource){
     var resourcePath=path.join(__dirname, "resourcecache", newResource.filename);
     fs.writeFile(resourcePath, new Buffer(newResource.filecontent, 'base64'));
-    console.log('writing to file'+resourcePath);
 }
     
 function sendWidgets(client){
@@ -137,52 +132,43 @@ function sendWidgets(client){
     var widgetPath=path.join(__dirname, "widgets");
     var files = fs.readdirSync(widgetPath);
     for(var i in files){
-        widgetName=files[i].substr(0,files[i].lastIndexOf('.'));
         widgetFile=path.join(widgetPath,files[i]);
+        if (fs.lstatSync(widgetFile).isDirectory())
+             continue;
+
+        widgetName=files[i].substr(0,files[i].lastIndexOf('.'));
         newWidgetJSON={ "name":widgetName, "htmlstring":fs.readFileSync(widgetFile, "utf8")};
-        client.publish('/addwidget', newWidgetJSON);
+        client.publish('/addwidget', newWidgetJSON);            
     }
 }
 
 function sendResources(client){
     var resourceFile,
         newResourceJSON;
-    var resourcePath=path.join(__dirname, "resources");
+    var resourcePath=path.join(__dirname, "widgets","resources");
     var files = fs.readdirSync(resourcePath);
     for(var i in files){
         resourceFile=path.join(resourcePath,files[i]);
-        console.log('trying to send:'+resourceFile);
         newResourceJSON={ "filename":files[i], "filecontent":new Buffer(fs.readFileSync(resourceFile) || '').toString('base64')};
         client.publish('/addresource', newResourceJSON);
-        console.log("new resource added:"+files[i]);
     }
 }
 
-
-//helper function handles file verification
 function getFile(filePath,res,mimeType){
-    //does the requested file exist?
     fs.exists(filePath,function(exists){
-        //if it does...
         if(exists){
-            //read the file, run the anonymous function
             fs.readFile(filePath,function(err,contents){
                 if(!err){
-                    //if there was no error
-                    //send the contents with the default 200/ok header
                     res.writeHead(200,{
                         "Content-type" : mimeType,
                         "Content-Length" : contents.length
                     });
                     res.end(contents);
                 } else {
-                    //for our own troubleshooting
                     console.dir(err);
                 };
             });
         } else {
-            //if the requested file was not found
-            //serve-up our custom 404 page
             res.writeHead(404, {'Content-Type': 'text/html'});
             res.end("<html><head></head><body>Cannot find the requested file</body></html>");
         };
