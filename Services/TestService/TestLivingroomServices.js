@@ -1,5 +1,5 @@
 //Service is used to trigger events for test purposes 
 exports.initializeService = function(client) {
     //client.subscribe('/somethingtolistento', function(message){console.log(message);});
-    setTimeout(function(){client.publish('/watchnot', {roomnr:'3'});}, 4000);
+    setTimeout(function(){client.publish('/watchit', {roomnr:'3'});}, 4000);
 };
