@@ -4,6 +4,6 @@ var config = require('./serviceconfig.json');
 
 exports.initializeService = function(client) {
     client.subscribe('/deploymentrequested', function(message){
-        exec(config.gitpullscript, function (error,stdout,stderr) {console.log(stdout);)};
+        exec(config.gitpullscript, function (error,stdout,stderr) {console.log(stdout);});
     });
 };
