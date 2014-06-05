@@ -1,3 +1,0 @@
-function tada{
-	alert('taaaada');
-}
