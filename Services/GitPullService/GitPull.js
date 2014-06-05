@@ -1,9 +1,23 @@
 //Service listens /gitpullrequested
-var exec = require('child_process').exec;
+var spawn = require('child_process').spawn
 var config = require('./serviceconfig.json');
 
 exports.initializeService = function(client) {
     client.subscribe('/deploymentrequested', function(message){
-        exec(config.gitpullscript, function (error,stdout,stderr) {console.log(stdout);});
+        var sp=spawn(config.gitpullscript,[], {
+   			detached: true
+ 		});
+
+		sp.stdout.on('data', function (data) {
+		  console.log('stdout: ' + data);
+		});
+
+		sp.stderr.on('data', function (data) {
+		  console.log('stderr: ' + data);
+		});
+
+		sp.on('close', function (code) {
+		  console.log('child process exited with code ' + code);
+		});
     });
 };
