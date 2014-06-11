@@ -64,13 +64,53 @@
 	"buffers":
 	[
 		{
-			"contents": "//Example from here: http://blog.nodejitsu.com/a-simple-webservice-in-nodejs/\nvar http = require('http'),\n    url = require(\"url\"),\n    path = require('path'),\n    fs = require('fs'),\n    config = require('./serviceconfig.json'),\n    extend = require('util')._extend,\n    cacheWidgets = JSON.parse(\"[]\"),\n    resourceJSONArray=[],\n    extensions = {\n        \".html\" : \"text/html\",\n        \".css\" : \"text/css\",\n        \".js\" : \"application/javascript\",\n        \".png\" : \"image/png\",\n        \".gif\" : \"image/gif\",\n        \".jpg\" : \"image/jpeg\",\n        \".jpeg\" : \"image/jpeg\"\n    };\n\n//TODO: - add stability to parser functionality\n//      - check if resources has to be devided into binary and text resources\n//      - add resource capability\n//      - handle css resources separately? \"one for all\"\n//      - refresh resource event?\n\n\nexports.initializeService = function(client) {\n    \n    if (config.clearresourcesonstartup==\"true\"){\n        fs.readdirSync(path.join(__dirname, \"resourcecache\")).forEach(function(fileName) {\n            console.log(\"removing cached files\");\n            fs.unlinkSync(path.join(__dirname, \"resourcecache\",fileName));\n        });\n    }\n\n    client.subscribe('/addwidget', function(widget){\n        console.log('widget added:'+widget.name);\n        updateOrAppendWidget(widget);\n    });\n    \n    client.subscribe('/addresource', function(resource){\n        console.log('resource added:'+resource.filename);\n        updateOrAppendResource(resource);\n    });\n\n    //listen for requests to refresh resources and widgets\n    client.subscribe('/widgetrefreshrequested', function(message){\n        console.log(\"refresh requested\");\n        sendWidgets(client);\n        if (message.includeresources)\n            sendResources(client);    \n    });\n        \n    var server = http.createServer(function (request, response) {\n        var data = '';\n        var my_path = url.parse(request.url).pathname; \n        var resourceFile,resourcelocation, ext;\n        \n        request.on('data', function (chunk) {\n          data += chunk;\n        });\n    \n        switch(my_path)\n        {\n            case '/getwidgets/':\n            response.writeHead(200, { 'Content-Type': 'application/json' });\n            response.end(JSON.stringify(cacheWidgets));\n            break;\n            \n            case '/triggerevent/':\n            request.on('end', function(){\n                console.log ('complete json:'+data);\n                var jsonEventObj=JSON.parse(data);\n                \n                response.writeHead(200, { 'Content-Type': 'text/plain' });\n                response.end('triggered event');\n                client.publish(jsonEventObj.eventname,JSON.parse(jsonEventObj.data));\n            });\n            break;\n            \n            //TODO: is this required by android client? - dynamic creation of widgets? - use case?\n            case '/addwidget/':\n            request.on('end', function(){\n                var jsonEventObj=JSON.parse(data);\n                response.writeHead(200, { 'Content-Type': 'text/plain' });\n                response.end('added widget');\n                updateOrAppendWidget(jsonEventObj);\n            });\n            break;\n            \n            default:\n            if (my_path.match(/\\/resources\\//g)){\n                resourceFile=request.url.substring(request.url.lastIndexOf('/')+1);\n                ext = path.extname(resourceFile);\n                console.log(\"resource requested:\"+resourceFile);\n\n                if(!extensions[ext]){\n                    //for now just send a 404 and a short message\n                    response.writeHead(404, {'Content-Type': 'text/html'});\n                    response.end(\"<html><head></head><body>The requested file type is not supported</body></html>\");\n                    console.log(\"non supported file type\");\n                }else{\n                    resourcelocation=path.join(__dirname, \"resourcecache\",resourceFile);\n                    console.log('resourcelocation:'+resourcelocation);\n                    getFile(resourcelocation,response,extensions[ext]);\n                };\n                \n            }else{\n                response.writeHead(501, { 'Content-Type': 'text/html' });\n                response.end('wrong url');\n            };\n        }\n        \n    }).listen(config.httpport);\n    \n    setTimeout(function(){client.publish('/widgetrefreshrequested', {includeresources:'true'});},3000);\n};\n\nfunction updateOrAppendWidget(newWidget){\n    for(var i = cacheWidgets.length - 1; i >= 0; i--) {\n        if(cacheWidgets[i].name == newWidget.name)\n            cacheWidgets.splice(i, 1);\n    }\n    cacheWidgets.push(newWidget);\n}\n\nfunction updateOrAppendResource(newResource){\n    var resourcePath=path.join(__dirname, \"resourcecache\", newResource.filename);\n    fs.writeFile(resourcePath, new Buffer(newResource.filecontent, 'base64'));\n    console.log('writing to file'+resourcePath);\n}\n    \nfunction sendWidgets(client){\n    var widgetFile,\n        newWidgetJSON,\n        widgetName;\n    var widgetPath=path.join(__dirname, \"widgets\");\n    var files = fs.readdirSync(widgetPath);\n    for(var i in files){\n        widgetName=files[i].substr(0,files[i].lastIndexOf('.'));\n        widgetFile=path.join(widgetPath,files[i]);\n        newWidgetJSON={ \"name\":widgetName, \"htmlstring\":fs.readFileSync(widgetFile, \"utf8\")};\n        client.publish('/addwidget', newWidgetJSON);\n    }\n}\n\nfunction sendResources(client){\n    var resourceFile,\n        newResourceJSON;\n    var resourcePath=path.join(__dirname, \"widgets\",\"resources\");\n    var files = fs.readdirSync(resourcePath);\n    for(var i in files){\n        resourceFile=path.join(resourcePath,files[i]);\n        console.log('trying to send:'+resourceFile);\n        newResourceJSON={ \"filename\":files[i], \"filecontent\":new Buffer(fs.readFileSync(resourceFile) || '').toString('base64')};\n        client.publish('/addresource', newResourceJSON);\n        console.log(\"new resource added:\"+files[i]);\n    }\n}\n\n\n//helper function handles file verification\nfunction getFile(filePath,res,mimeType){\n    //does the requested file exist?\n    fs.exists(filePath,function(exists){\n        //if it does...\n        if(exists){\n            //read the file, run the anonymous function\n            fs.readFile(filePath,function(err,contents){\n                if(!err){\n                    //if there was no error\n                    //send the contents with the default 200/ok header\n                    res.writeHead(200,{\n                        \"Content-type\" : mimeType,\n                        \"Content-Length\" : contents.length\n                    });\n                    res.end(contents);\n                } else {\n                    //for our own troubleshooting\n                    console.dir(err);\n                };\n            });\n        } else {\n            //if the requested file was not found\n            //serve-up our custom 404 page\n            res.writeHead(404, {'Content-Type': 'text/html'});\n            res.end(\"<html><head></head><body>Cannot find the requested file</body></html>\");\n        };\n    });\n};",
 			"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
-			"file_size": 7457,
-			"file_write_time": 130460142079372515,
 			"settings":
 			{
-				"buffer_size": 7103,
+				"buffer_size": 6430,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Services/GitPullService/GitPull.js",
+			"settings":
+			{
+				"buffer_size": 494,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Services/GitPullService/serviceconfig.json.example",
+			"settings":
+			{
+				"buffer_size": 81,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "// http://www.barryvandam.com/node-js-communicating-with-arduino/\n\n//configuration of port\nvar nconf = require('nconf');\nnconf.file({ file: 'config.json' });\n// Provide default values for settings not provided above.\nnconf.defaults({\n    'arduinoport': '/dev/ttyUSB0'\n});  //accessable through nconf.get('arduinoport')\n\nvar serialport = require(\"serialport\");\nvar SerialPort = serialport.SerialPort; // localize object constructor\n\nvar sp = new SerialPort(nconf.get('arduinoport'), {\n  parser: serialport.parsers.readline(\"\\n\")\n});\n\nsp.open(function () {\n  console.log('open');\n  sp.on('data', function(data) {\n    try\n	{\n		var j = JSON.parse(data);\n		console.log( j.celsius);\n	}\n	catch (ex)\n	{\n		console.warn(ex);\n	}\n  });\n  \n  sp.write(\"ls\\n\", function(err, results) {\n    console.log('err ' + err);\n    console.log('results ' + results);\n  });\n});\n\n//arduino module should communicate json like this: \n//Sending a JSON string over Serial/USB like: {\"ab\":\"123\",\"bc\":\"234\",\"cde\":\"3546\"}\n//	Serial.println(\"{\\\"adc\\\":\\\"\" + String((long)round(100.0 * rawADC1)) +\n//			\"\\\", \\\"celsius\\\":\\\"\" + String((long)round(100.0 * thermistor(rawADC1, Resistance1))) +\n//			\"\\\", \\\"adc2\\\":\\\"\" + String((long)round(100.0 * rawADC2)) +\n//			\"\\\", \\\"celsius2\\\":\\\"\" + String((long)round(100.0 * thermistor(rawADC2, Resistance2))) +\n//			\"\\\"}\");\n\n//// form a JSON-formatted string:   http://www.tigoe.com/pcomp/code/arduinowiring/1109/\n//    String jsonString = \"{\\\"x\\\":\\\"\";\n//    jsonString += x;\n//    jsonString +=\"\\\",\\\"y\\\":\\\"\";\n//    jsonString += y;\n//    jsonString +=\"\\\",\\\"z\\\":\\\"\";\n//    jsonString += z;\n//    jsonString +=\"\\\"}\";\n\n// print it:\n//  Serial.println(jsonString);\n\n\n",
+			"file": "Services/TemplateService/ArduinoService.js",
+			"file_size": 1664,
+			"file_write_time": 130370265818131203,
+			"settings":
+			{
+				"buffer_size": 1663,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Services/TestService/TestLivingroomServices.js",
+			"settings":
+			{
+				"buffer_size": 270,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "README.md",
+			"settings":
+			{
+				"buffer_size": 4930,
 				"line_ending": "Unix"
 			}
 		},
@@ -83,13 +123,10 @@
 			}
 		},
 		{
-			"contents": "<html>\n<script></script><body><b>Quick events</b><br><input type=button value='Watch TV Livingroom' style='height: 90px; width: 100%' onClick='watchtvlivingroom()'></input><br><br><input type=button value='Watch MediaPC Livingroom' style='height: 90px; width: 100%' onClick='watchmediapclivingroom()'></input><br><br><input type=button value='Play PS3 Livingroom' style='height: 90px; width: 100%' onClick='playps3livingroom()'></input><br><br><input type=button value='Watch Skype Livingroom' style='height: 90px; width: 100%' onClick='watchskypelivingroom()'></input><br><br><input type=button value='All media OFF livingroom' style='height: 90px; width: 100%' onClick='allmediaofflivingroom()'></input>    <script type='text/javascript'>function watchtvlivingroom() { Android.triggerevent('/watchtvlivingroom','{\\\"foo\\\": \\\"bar\\\"}');}   function watchmediapclivingroom() { Android.triggerevent('/watchmediapclivingroom','{\\\"foo\\\": \\\"bar\\\"}');}      function playps3livingroom() { Android.triggerevent('/playps3livingroom','{\\\"foo\\\": \\\"bar\\\"}');}      function watchskypelivingroom() { Android.triggerevent('/watchskypelivingroom','{\\\"foo\\\": \\\"bar\\\"}');}      function allmediaofflivingroom() { Android.triggerevent('/allmediaofflivingroom','{\\\"foo\\\": \\\"bar\\\"}');}   </script></body></html>",
 			"file": "Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
-			"file_size": 1290,
-			"file_write_time": 130460032729951858,
 			"settings":
 			{
-				"buffer_size": 1291,
+				"buffer_size": 1421,
 				"line_ending": "Unix"
 			}
 		},
@@ -100,14 +137,6 @@
 				"buffer_size": 862,
 				"line_ending": "Unix",
 				"name": "sudo nano /etc/init.d/nodejs.sh"
-			}
-		},
-		{
-			"file": "/home/jakob/media/download/hyperion.config.json",
-			"settings":
-			{
-				"buffer_size": 20792,
-				"line_ending": "Unix"
 			}
 		},
 		{
@@ -123,16 +152,28 @@
 	"build_system": "Packages/User/eventfulhome.sublime-build",
 	"command_palette":
 	{
-		"height": 54.0,
+		"height": 117.0,
 		"selected_items":
 		[
 			[
-				"forma",
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"f",
 				"Format Code"
 			],
 			[
-				"install",
-				"Package Control: Install Package"
+				"for",
+				"Format Code"
+			],
+			[
+				"form",
+				"Format Code"
+			],
+			[
+				"forma",
+				"Format Code"
 			],
 			[
 				"rein",
@@ -229,6 +270,25 @@
 	},
 	"file_history":
 	[
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/isarray/index.js",
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/node_modules/inherits/README.md",
+		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/isarray/component.json",
+		"/home/jakob/EventfulHome/Services/TemplateService/config.json",
+		"/home/jakob/EventfulHome/.gitignore",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.gradle/1.10/taskArtifacts/outputFileStates.bin",
+		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/livingroom1.html",
+		"/home/jakob/EventfulHome/Services/GitPullService/GitPull.js",
+		"/home/jakob/EventfulHome/Services/GitPullService/GitPull.sh",
+		"/home/jakob/EventfulHome/Services/GitPullService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/GitPullService/gitpull.sh",
+		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+		"/home/jakob/EventfulHome/Services/TestService/TestService.js",
+		"/home/jakob/EventfulHome/ServiceHost.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/app/app.iml",
+		"/home/jakob/EventfulHome/Services/PVRService/service.js",
+		"/home/jakob/media/download/hyperion.config.json",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/xml/preferences.xml",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/app/src/main/res/values/ids.xml",
@@ -241,7 +301,6 @@
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/gradle.xml",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/encodings.xml",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.idea/compiler.xml",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/app/app.iml",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/workspace.xml",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/vcs.xml",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/.idea/gradle.xml",
@@ -275,7 +334,6 @@
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/faye-websocket/examples/sse.html",
 		"/home/jakob/EventfulHome/Services/RemoteWidgetService/humaxpvr (copy).html",
 		"/home/jakob/EventfulHome/Services/PVRService/widgets/humaxpvr.html",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/livingroom1.html",
 		"/home/jakob/EventfulHome/Services/RemoteWidgetService/humaxpvr.html",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/faye-websocket/node_modules/websocket-driver/lib/websocket/driver/http_parser.js",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/HDMISwitch.js",
@@ -283,12 +341,9 @@
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resourcecache/somejs.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resources/tada.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resourcecache/tada.js",
-		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/balcony.html",
-		"/home/jakob/EventfulHome/ServiceHost.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/service.js",
-		"/home/jakob/EventfulHome/Services/TestService/TestService.js",
 		"/home/jakob/EventfulHome/Services/TemplateService/SensorService.js",
 		"/home/jakob/EventfulHome/Services/TemplateService/ArduinoService.js",
 		"/home/jakob/EventfulHome/Services/LightService/TellstickService.js",
@@ -308,9 +363,7 @@
 		"/home/jakob/EventfulHome/Services/YamahaReceiverService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/TestService/TestLivingroomServices.js",
 		"/home/jakob/EventfulHome/Services/XBMCService/XBMC.js",
-		"/home/jakob/EventfulHome/Services/TemplateService/config.json",
 		"/home/jakob/EventfulHome/Services/LGReceiverService/LGReceiver.js",
-		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
 		"/home/jakob/EventfulHome/Services/TemperatureLoggerService/creatingChart.js",
 		"/home/jakob/EventfulHome/Services/YamahaReceiverService/YamahaReceiver.js",
 		"/home/jakob/media/download/script.doorbell/addon.xml",
@@ -318,7 +371,6 @@
 		"/home/jakob/media/Videos/Other Media/axelwebcam.strm",
 		"/home/jakob/Dropbox/Development/arduino/boblights/*",
 		"/home/jakob/.config/sublime-text-3/Packages/User/eventfulhome.sublime-build",
-		"/home/jakob/EventfulHome/.gitignore",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/.npmignore",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.gradle/1.10/taskArtifacts/fileSnapshots.bin",
 		"/home/jakob/EventfulHome/node_modules/faye/browser/faye-browser.js",
@@ -326,7 +378,6 @@
 		"/home/jakob/EventfulHome/node_modules/serialport/AUTHORS",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/settings.gradle",
 		"/home/jakob/EventfulHome/Services/HDMISwitchService/arduino.ino",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
 		"/home/jakob/EventfulHome/Services/TestService/service.js",
 		"/home/jakob/EventfulHome/Services/oldHDMIservice/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/SamsungTVService/SamsungTVService.js",
@@ -346,17 +397,7 @@
 		"/home/jakob/homeauto/node_modules/faye/package.json",
 		"/home/jakob/homeauto/EventfulHomeRemote/res/values/ids.xml",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/index.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/test/Events/11-script_in_script.json",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/domhandler/test/cases/07-unescaped_in_style.json",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/lib/static.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/bl/node_modules/readable-stream/test/simple/test-stream2-large-read-stall.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/readable-stream/test/simple/test-stream2-readable-from-list.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/transform.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/CONTRIBUTING.md",
-		"/home/jakob/homeauto/EventServices/Services/TemplateService/config.json",
-		"/home/jakob/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
-		"/home/jakob/homeauto/EventServices/Services/HDMISwitchService/HDMISwitch.js",
-		"/home/jakob/homeauto/EventServices/Services/XBMCService/XBMC.js"
+		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/test/Events/11-script_in_script.json"
 	],
 	"find":
 	{
@@ -375,6 +416,14 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"resource added",
+			"new resource",
+			"sendre",
+			"publish",
+			"sendresour",
+			"publish",
+			"resourceFile",
+			"bayeux",
 			"console.log",
 			"widget added",
 			"base64",
@@ -452,7 +501,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 4,
 			"sheets":
 			[
 				{
@@ -461,15 +510,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7103,
+						"buffer_size": 6430,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5563,
-								5563
+								4131,
+								4131
 							]
 						],
 						"settings":
@@ -583,14 +632,676 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2295.0,
+						"translation.y": 1500.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "Services/GitPullService/GitPull.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 494,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								494,
+								494
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "Services/GitPullService/serviceconfig.json.example",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 81,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								67,
+								67
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 3,
+					"file": "Services/TemplateService/ArduinoService.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1663,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								318,
+								318
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "Services/TestService/TestLivingroomServices.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 270,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								270,
+								270
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "README.md",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4930,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1194,
+								1194
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Markdown/Markdown.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 153.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
 					"file": "Services/EventfulHomeRemoteServerService/widgets/balcony.html",
 					"semi_transient": false,
 					"settings":
@@ -614,24 +1325,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 7,
 					"file": "Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1291,
+						"buffer_size": 1421,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7,
-								7
+								1421,
+								1421
 							]
 						],
 						"settings":
@@ -746,11 +1457,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 8,
 					"semi_transient": false,
 					"settings":
 					{
@@ -880,39 +1591,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "/home/jakob/media/download/hyperion.config.json",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 20792,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								20792,
-								20792
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/JavaScript/JSON.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
+					"buffer": 9,
 					"semi_transient": false,
 					"settings":
 					{
@@ -1040,7 +1723,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 8,
 					"type": "text"
 				}
 			]
@@ -1170,7 +1853,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 298.0,
+	"side_bar_width": 238.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
