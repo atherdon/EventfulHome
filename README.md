@@ -34,6 +34,11 @@ http://danieldvork.in/arduino-controlled-html5-etch-a-sketch-using-node-js-and-w
 http://ni-c.github.io/heimcontrol.js/
 http://www.barryvandam.com/arduino/node-js-communicating-with-arduino/ 
 
+Raspberry-pi-GPIO-> arduino
+http://justpushbuttons.com/blog/?p=376
+
+JY-MCU
+https://github.com/rwaldron/johnny-five/wiki/JY-MCU-Bluetooth-Serial-Port-Module-Notes
 
 IR-codes
 clone difficult ir-codes: http://www.richardosgood.com/blog/2013/11/12/clone-infrared-signals-with-arduino/
