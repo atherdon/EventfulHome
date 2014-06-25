@@ -1,4 +1,4 @@
 {
-    "server": "myLMSServer",
-    "port": "9090"
+    "LMSServer": "jakeMedia",
+    "LMSPort": "9000"
 }
