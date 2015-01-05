@@ -64,92 +64,144 @@
 	"buffers":
 	[
 		{
-			"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+			"file": "Services/MusicService/SqueezeBoxRemoteService.js",
 			"settings":
 			{
-				"buffer_size": 6430,
+				"buffer_size": 796,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "Services/GitPullService/GitPull.js",
+			"file": "/home/jakob/temp/lms/lms.js",
 			"settings":
 			{
-				"buffer_size": 494,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Services/GitPullService/serviceconfig.json.example",
-			"settings":
-			{
-				"buffer_size": 81,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "// http://www.barryvandam.com/node-js-communicating-with-arduino/\n\n//configuration of port\nvar nconf = require('nconf');\nnconf.file({ file: 'config.json' });\n// Provide default values for settings not provided above.\nnconf.defaults({\n    'arduinoport': '/dev/ttyUSB0'\n});  //accessable through nconf.get('arduinoport')\n\nvar serialport = require(\"serialport\");\nvar SerialPort = serialport.SerialPort; // localize object constructor\n\nvar sp = new SerialPort(nconf.get('arduinoport'), {\n  parser: serialport.parsers.readline(\"\\n\")\n});\n\nsp.open(function () {\n  console.log('open');\n  sp.on('data', function(data) {\n    try\n	{\n		var j = JSON.parse(data);\n		console.log( j.celsius);\n	}\n	catch (ex)\n	{\n		console.warn(ex);\n	}\n  });\n  \n  sp.write(\"ls\\n\", function(err, results) {\n    console.log('err ' + err);\n    console.log('results ' + results);\n  });\n});\n\n//arduino module should communicate json like this: \n//Sending a JSON string over Serial/USB like: {\"ab\":\"123\",\"bc\":\"234\",\"cde\":\"3546\"}\n//	Serial.println(\"{\\\"adc\\\":\\\"\" + String((long)round(100.0 * rawADC1)) +\n//			\"\\\", \\\"celsius\\\":\\\"\" + String((long)round(100.0 * thermistor(rawADC1, Resistance1))) +\n//			\"\\\", \\\"adc2\\\":\\\"\" + String((long)round(100.0 * rawADC2)) +\n//			\"\\\", \\\"celsius2\\\":\\\"\" + String((long)round(100.0 * thermistor(rawADC2, Resistance2))) +\n//			\"\\\"}\");\n\n//// form a JSON-formatted string:   http://www.tigoe.com/pcomp/code/arduinowiring/1109/\n//    String jsonString = \"{\\\"x\\\":\\\"\";\n//    jsonString += x;\n//    jsonString +=\"\\\",\\\"y\\\":\\\"\";\n//    jsonString += y;\n//    jsonString +=\"\\\",\\\"z\\\":\\\"\";\n//    jsonString += z;\n//    jsonString +=\"\\\"}\";\n\n// print it:\n//  Serial.println(jsonString);\n\n\n",
-			"file": "Services/TemplateService/ArduinoService.js",
-			"file_size": 1664,
-			"file_write_time": 130370265818131203,
-			"settings":
-			{
-				"buffer_size": 1663,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Services/TestService/TestLivingroomServices.js",
-			"settings":
-			{
-				"buffer_size": 270,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "README.md",
-			"settings":
-			{
-				"buffer_size": 4930,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Services/EventfulHomeRemoteServerService/widgets/balcony.html",
-			"settings":
-			{
-				"buffer_size": 230,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
-			"settings":
-			{
-				"buffer_size": 1421,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "sudo nano /etc/init.d/nodejs.sh\n\n\n\n\n\n#!/bin/bash\nexport PATH=$PATH:/opt/node/bin\nexport NODE_PATH=$NODE_PATH:/opt/node/lib/node_modules\nexport HOME=/home/pi\nexport EHSERVER=192.168.1.5\nexport EHPORT=16005\n\ncase \"$1\" in\n  start)\n    exec /opt/node/bin/forever -l $HOME/.forever/nodejs.forever.log -o $HOME/.forever/nodejs.output.log -e $HOME/.forever/nodejs.error.log -p $HOME/.forever --sourceDir=$HOME/EventfulHome/ ServiceHost.js -s $EHSERVER -p $EHPORT &\n    ;;\n  stop)\n    exec /opt/node/bin/forever stopall\n    ;;\n  *)\n\n  echo \"Usage: /etc/init.d/nodejs.sh {start|stop}\"\n  exit 1\n  ;;\nesac\nexit 0\n\n\n\n\n\n\nstart on startup\nexec forever -l /home/xbmc/.forever/nodejs.forever.log -o /home/xbmc/.forever/nodejs.output.log -e /home/xbmc/.forever/nodejs.error.log -p /home/xbmc/.forever --sourceDir=/home/xbmc/EventfulHome/ ServiceHost.js -s localhost -p 16005 -l &",
-			"settings":
-			{
-				"buffer_size": 862,
+				"buffer_size": 403,
 				"line_ending": "Unix",
-				"name": "sudo nano /etc/init.d/nodejs.sh"
+				"name": "var SqueezeServer = require('squeezenode');"
 			}
 		},
 		{
-			"contents": "wget --user=xbmc --password=gra97ka 'http://jakemedia:8080/jsonrpc?request={\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"script.doorbell\"}}'\n\n\n\n?? http://xbmc:gra97ka@jakemedia:8080/jsonrpc?request={\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"Addons.ExecuteAddon\",\"params\":{\"addonid\":\"script.doorbell\"}}\n\n\nhttp://jakemedia:8080/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22id%22:1,%22method%22:%22Addons.ExecuteAddon%22,%22params%22:{%22addonid%22:%22script.doorbell%22}}\n\nvlc http://admin:gra97ka@192.168.1.42:80/video/mjpg.cgi\n\n",
+			"contents": "cd \"/home/xbmc/media/Videos/Home Videos\" && mkdir -p $(date +\"%Y%m\") && find ./ -mtime -1 -type f -exec mv \"{}\" \"$_\" \\;\n\ncd \"/home/xbmc/Pictures/jake \" && mkdir -p $(date +\"%Y%m\") && find ./ -mtime -1 -type f -exec mv \"{}\" \"$_\" \\;\n",
+			"settings":
+			{
+				"buffer_size": 231,
+				"line_ending": "Unix",
+				"name": "cd \"/home/xbmc/media/Videos/Home Videos\" && mkdir"
+			}
+		},
+		{
+			"file": "/home/jakob/Dropbox/Development/GAE/fromjesstojake/fromjesstojake.py",
+			"settings":
+			{
+				"buffer_size": 2581,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Package Control Messages\n========================\n\nCodeFormatter:\n-------------\n\n  Sublime CodeFormatter 2.4.1 Changelog:\n  \n  Please report me any bugs and proposals at akalongman@gmail.com or GitHub (https://github.com/akalongman/sublimetext-codeformatter/issues)\n  \n  Features\n  ------------\n  - Added extra commands, such as \"Format as Javascript\" and etc.\n",
+			"settings":
+			{
+				"buffer_size": 361,
+				"line_ending": "Unix",
+				"name": "Package Control Messages",
+				"scratch": true
+			}
+		},
+		{
+			"file": "/home/jakob/Dropbox/Development/GAE/fromjesstojake/app.yaml",
+			"settings":
+			{
+				"buffer_size": 147,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/jakob/Dropbox/Development/HomeAutomation/duinotest/t.js",
+			"settings":
+			{
+				"buffer_size": 977,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/jakob/Dropbox/Development/HomeAutomation/duinotest/j.js",
+			"settings":
+			{
+				"buffer_size": 1176,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/jakob/.config/sublime-text-3/Packages/User/nodejs.sublime-build",
+			"settings":
+			{
+				"buffer_size": 25,
+				"line_ending": "Unix",
+				"name": "untitled.sublime-build"
+			}
+		},
+		{
+			"file": "Services/RobotService/Arduino/duino.ino",
+			"settings":
+			{
+				"buffer_size": 5439,
+				"line_ending": "Unix",
+				"name": "#include <Servo.h>"
+			}
+		},
+		{
+			"file": "/home/jakob/Dropbox/Development/GAE/fromjesstojake/cron.yaml",
+			"settings":
+			{
+				"buffer_size": 96,
+				"line_ending": "Unix",
+				"name": "cron:"
+			}
+		},
+		{
+			"file": "Services/XBMCService/XBMC.js",
+			"settings":
+			{
+				"buffer_size": 778,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "misc/PiInstallation/InstallOnPi.sh",
+			"settings":
+			{
+				"buffer_size": 852,
+				"line_ending": "Unix",
+				"name": "cd"
+			}
+		},
+		{
+			"contents": "\nstart on startup\nexec forever -l /home/xbmc/.forever/nodejs.forever.log -o /home/xbmc/.forever/nodejs.output.log -e /home/xbmc/.forever/nodejs.error.log -p /home/xbmc/.forever --sourceDir=/home/xbmc/EventfulHome/ ServiceHost.js -s localhost -p 16005 -l &",
+			"settings":
+			{
+				"buffer_size": 255,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/jakob/Dropbox/Development/webcam/wget and vlc.txt",
 			"settings":
 			{
 				"buffer_size": 548,
 				"line_ending": "Unix",
 				"name": "wget --user=xbmc --password=gra97ka 'http://jakeme"
 			}
+		},
+		{
+			"file": "Services/HDMISwitchService/samsung tv example",
+			"settings":
+			{
+				"buffer_size": 2890,
+				"line_ending": "Unix"
+			}
 		}
 	],
-	"build_system": "Packages/User/eventfulhome.sublime-build",
+	"build_system": "",
 	"command_palette":
 	{
 		"height": 117.0,
@@ -158,6 +210,14 @@
 			[
 				"install",
 				"Package Control: Install Package"
+			],
+			[
+				"xml",
+				"Snippet: XML Processing Instruction"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
 			],
 			[
 				"f",
@@ -268,8 +328,28 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
+	"expanded_folders":
+	[
+		"/home/jakob/EventfulHome",
+		"/home/jakob/EventfulHome/Services",
+		"/home/jakob/EventfulHome/Services/HDMISwitchService"
+	],
 	"file_history":
 	[
+		"/home/jakob/Downloads/duino-master/index.js",
+		"/home/jakob/Dropbox/Development/GAE/fromjesstojake/untitled.xml",
+		"/home/jakob/EventfulHome/Services/TestService/TestLivingroomServices.js",
+		"/home/jakob/EventfulHome/README.md",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/balcony.html",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
+		"/home/jakob/EventfulHome/Services/TemplateService/ArduinoService.js",
+		"/home/jakob/EventfulHome/Services/GitPullService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/Services/GitPullService/GitPull.sh",
+		"/home/jakob/EventfulHome/Services/GitPullService/GitPull.js",
+		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+		"/home/jakob/EventfulHome/Services/MusicService/serviceconfig.json.example",
+		"/home/jakob/EventfulHome/misc/PiInstallation/.bash_profile",
+		"/home/jakob/EventfulHome/misc/PiInstallation/nodejs.sh",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/isarray/index.js",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/node_modules/inherits/README.md",
 		"/home/jakob/EventfulHome/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/isarray/component.json",
@@ -278,12 +358,8 @@
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/Android client/.gradle/1.10/taskArtifacts/outputFileStates.bin",
 		"/home/jakob/EventfulHome/Services/LivingroomService/Livingroom.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/livingroom1.html",
-		"/home/jakob/EventfulHome/Services/GitPullService/GitPull.js",
-		"/home/jakob/EventfulHome/Services/GitPullService/GitPull.sh",
-		"/home/jakob/EventfulHome/Services/GitPullService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/GitPullService/gitpull.sh",
 		"/home/jakob/EventfulHome/Services/PVRService/PVR.js",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
 		"/home/jakob/EventfulHome/Services/TestService/TestService.js",
 		"/home/jakob/EventfulHome/ServiceHost.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/app/app.iml",
@@ -341,11 +417,8 @@
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resourcecache/somejs.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resources/tada.js",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/resourcecache/tada.js",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
-		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/widgets/balcony.html",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/service.js",
 		"/home/jakob/EventfulHome/Services/TemplateService/SensorService.js",
-		"/home/jakob/EventfulHome/Services/TemplateService/ArduinoService.js",
 		"/home/jakob/EventfulHome/Services/LightService/TellstickService.js",
 		"/home/jakob/EventfulHome/Services/TestService/ListeningTestService.js",
 		"/home/jakob/EventfulHome/Services/BalconyService/BalconyGardeningService.js",
@@ -358,10 +431,8 @@
 		"/home/jakob/EventfulHome/Services/LGReceiverService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/LightService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/LivingroomService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/MusicService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/PVRService/serviceconfig.json.example",
 		"/home/jakob/EventfulHome/Services/YamahaReceiverService/serviceconfig.json.example",
-		"/home/jakob/EventfulHome/Services/TestService/TestLivingroomServices.js",
 		"/home/jakob/EventfulHome/Services/XBMCService/XBMC.js",
 		"/home/jakob/EventfulHome/Services/LGReceiverService/LGReceiver.js",
 		"/home/jakob/EventfulHome/Services/TemperatureLoggerService/creatingChart.js",
@@ -383,7 +454,6 @@
 		"/home/jakob/EventfulHome/Services/SamsungTVService/SamsungTVService.js",
 		"/home/jakob/EventfulHome/Services/RemoteWidgetService/HumaxPVR.html",
 		"/home/jakob/EventfulHome/Services/EventfulHomeRemoteServerService/EventfulHomeRemote/res/menu/main.xml",
-		"/home/jakob/EventfulHome/README.md",
 		"/home/jakob/EventfulHome/.idea/workspace.xml",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/CSSselect/node_modules/domutils/lib/querying.js",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/csprng/node_modules/sequin/lib/sequin.js",
@@ -393,11 +463,7 @@
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/test/common.js",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/domhandler/test/cases/06-comment_in_script.json",
 		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/node_modules/domhandler/test/cases/13-comment_in_text.json",
-		"/home/jakob/homeauto/EventServices/Services/BalconyService/BalconyGardeningService.js",
-		"/home/jakob/homeauto/node_modules/faye/package.json",
-		"/home/jakob/homeauto/EventfulHomeRemote/res/values/ids.xml",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/index.js",
-		"/home/jakob/homeauto/node_modules/faye/node_modules/concat-stream/node_modules/readable-stream/node_modules/string_decoder/build/node_modules/cheerio/node_modules/htmlparser2/test/Events/11-script_in_script.json"
+		"/home/jakob/homeauto/EventServices/Services/BalconyService/BalconyGardeningService.js"
 	],
 	"find":
 	{
@@ -416,6 +482,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"photojess",
+			"gra9",
+			"gra",
 			"resource added",
 			"new resource",
 			"sendre",
@@ -501,24 +570,24 @@
 	"groups":
 	[
 		{
-			"selected": 4,
+			"selected": 15,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "Services/EventfulHomeRemoteServerService/EventfulHomeRemoteServer.js",
+					"file": "Services/MusicService/SqueezeBoxRemoteService.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6430,
+						"buffer_size": 796,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4131,
-								4131
+								796,
+								796
 							]
 						],
 						"settings":
@@ -632,27 +701,688 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1500.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "Services/GitPullService/GitPull.js",
+					"file": "/home/jakob/temp/lms/lms.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 494,
+						"buffer_size": 403,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								494,
-								494
+								344,
+								344
+							]
+						],
+						"settings":
+						{
+							"auto_name": "var SqueezeServer = require('squeezenode');",
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 231,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								150,
+								150
+							]
+						],
+						"settings":
+						{
+							"auto_name": "cd \"/home/xbmc/media/Videos/Home Videos\" && mkdir",
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/home/jakob/Dropbox/Development/GAE/fromjesstojake/fromjesstojake.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2581,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								249,
+								249
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 153.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 361,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								361,
+								361
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "/home/jakob/Dropbox/Development/GAE/fromjesstojake/app.yaml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 147,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								147,
+								147
+							]
+						],
+						"settings":
+						{
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/YAML/YAML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/home/jakob/Dropbox/Development/HomeAutomation/duinotest/t.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 977,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								467,
+								467
 							]
 						],
 						"settings":
@@ -764,159 +1494,27 @@
 							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 153.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "Services/GitPullService/serviceconfig.json.example",
+					"buffer": 7,
+					"file": "/home/jakob/Dropbox/Development/HomeAutomation/duinotest/j.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 81,
+						"buffer_size": 1176,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								67,
-								67
-							]
-						],
-						"settings":
-						{
-							"codeintel": true,
-							"codeintel_config":
-							{
-								"JavaScript":
-								{
-									"codeintel_max_recursive_dir_depth": 2,
-									"codeintel_scan_files_in_project": false,
-									"javascriptExtraPaths":
-									[
-									]
-								},
-								"PHP":
-								{
-									"codeintel_max_recursive_dir_depth": 5,
-									"codeintel_scan_files_in_project": false,
-									"phpExtraPaths":
-									[
-									]
-								},
-								"Python":
-								{
-									"env":
-									{
-									}
-								}
-							},
-							"codeintel_enabled_languages":
-							[
-								"JavaScript",
-								"Mason",
-								"XBL",
-								"XUL",
-								"RHTML",
-								"SCSS",
-								"Python",
-								"HTML",
-								"Ruby",
-								"Python3",
-								"XML",
-								"Sass",
-								"XSLT",
-								"Django",
-								"HTML5",
-								"Perl",
-								"CSS",
-								"Twig",
-								"Less",
-								"Smarty",
-								"Node.js",
-								"Tcl",
-								"TemplateToolkit",
-								"PHP"
-							],
-							"codeintel_live": true,
-							"codeintel_live_enabled_languages":
-							[
-								"JavaScript",
-								"Mason",
-								"XBL",
-								"XUL",
-								"RHTML",
-								"SCSS",
-								"Python",
-								"HTML",
-								"Ruby",
-								"Python3",
-								"XML",
-								"Sass",
-								"XSLT",
-								"Django",
-								"HTML5",
-								"Perl",
-								"CSS",
-								"Twig",
-								"Less",
-								"Smarty",
-								"Node.js",
-								"Tcl",
-								"TemplateToolkit",
-								"PHP"
-							],
-							"codeintel_max_recursive_dir_depth": 10,
-							"codeintel_scan_exclude_dir":
-							{
-								"JavaScript":
-								[
-									"/build/",
-									"/min/"
-								]
-							},
-							"codeintel_scan_files_in_project": true,
-							"codeintel_selected_catalogs":
-							[
-								"PyWin32",
-								"jQuery",
-								"Rails"
-							],
-							"codeintel_snippets": true,
-							"codeintel_syntax_map":
-							{
-								"Python Django": "Python"
-							},
-							"codeintel_tooltips": "popup",
-							"sublime_auto_complete": true,
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "Services/TemplateService/ArduinoService.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1663,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								318,
-								318
+								335,
+								335
 							]
 						],
 						"settings":
@@ -1033,24 +1631,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "Services/TestService/TestLivingroomServices.js",
+					"buffer": 8,
+					"file": "/home/jakob/.config/sublime-text-3/Packages/User/nodejs.sublime-build",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 270,
+						"buffer_size": 25,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								270,
-								270
+								21,
+								21
 							]
 						],
 						"settings":
@@ -1159,194 +1757,35 @@
 							},
 							"codeintel_tooltips": "popup",
 							"sublime_auto_complete": true,
-							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "README.md",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4930,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1194,
-								1194
-							]
-						],
-						"settings":
-						{
-							"codeintel": true,
-							"codeintel_config":
-							{
-								"JavaScript":
-								{
-									"codeintel_max_recursive_dir_depth": 2,
-									"codeintel_scan_files_in_project": false,
-									"javascriptExtraPaths":
-									[
-									]
-								},
-								"PHP":
-								{
-									"codeintel_max_recursive_dir_depth": 5,
-									"codeintel_scan_files_in_project": false,
-									"phpExtraPaths":
-									[
-									]
-								},
-								"Python":
-								{
-									"env":
-									{
-									}
-								}
-							},
-							"codeintel_enabled_languages":
-							[
-								"JavaScript",
-								"Mason",
-								"XBL",
-								"XUL",
-								"RHTML",
-								"SCSS",
-								"Python",
-								"HTML",
-								"Ruby",
-								"Python3",
-								"XML",
-								"Sass",
-								"XSLT",
-								"Django",
-								"HTML5",
-								"Perl",
-								"CSS",
-								"Twig",
-								"Less",
-								"Smarty",
-								"Node.js",
-								"Tcl",
-								"TemplateToolkit",
-								"PHP"
-							],
-							"codeintel_live": true,
-							"codeintel_live_enabled_languages":
-							[
-								"JavaScript",
-								"Mason",
-								"XBL",
-								"XUL",
-								"RHTML",
-								"SCSS",
-								"Python",
-								"HTML",
-								"Ruby",
-								"Python3",
-								"XML",
-								"Sass",
-								"XSLT",
-								"Django",
-								"HTML5",
-								"Perl",
-								"CSS",
-								"Twig",
-								"Less",
-								"Smarty",
-								"Node.js",
-								"Tcl",
-								"TemplateToolkit",
-								"PHP"
-							],
-							"codeintel_max_recursive_dir_depth": 10,
-							"codeintel_scan_exclude_dir":
-							{
-								"JavaScript":
-								[
-									"/build/",
-									"/min/"
-								]
-							},
-							"codeintel_scan_files_in_project": true,
-							"codeintel_selected_catalogs":
-							[
-								"PyWin32",
-								"jQuery",
-								"Rails"
-							],
-							"codeintel_snippets": true,
-							"codeintel_syntax_map":
-							{
-								"Python Django": "Python"
-							},
-							"codeintel_tooltips": "popup",
-							"sublime_auto_complete": true,
-							"syntax": "Packages/Markdown/Markdown.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 153.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
-					"file": "Services/EventfulHomeRemoteServerService/widgets/balcony.html",
+					"buffer": 9,
+					"file": "Services/RobotService/Arduino/duino.ino",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 230,
+						"buffer_size": 5439,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								230,
-								230
+								5439,
+								5439
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/HTML/HTML.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "Services/EventfulHomeRemoteServerService/widgets/quickevents.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1421,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1421,
-								1421
-							]
-						],
-						"settings":
-						{
+							"auto_name": "#include <Servo.h>",
 							"codeintel": true,
 							"codeintel_config":
 							{
@@ -1451,7 +1890,170 @@
 							},
 							"codeintel_tooltips": "popup",
 							"sublime_auto_complete": true,
-							"syntax": "Packages/HTML/HTML.tmLanguage"
+							"syntax": "Packages/Arduino-like IDE/Arduino.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4005.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "/home/jakob/Dropbox/Development/GAE/fromjesstojake/cron.yaml",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 96,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								50,
+								50
+							]
+						],
+						"settings":
+						{
+							"auto_name": "cron:",
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/YAML/YAML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "Services/XBMCService/XBMC.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 778,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								778,
+								778
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -1461,24 +2063,159 @@
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 12,
+					"file": "misc/PiInstallation/InstallOnPi.sh",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 862,
+						"buffer_size": 852,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								218,
-								218
+								852,
+								852
 							]
 						],
 						"settings":
 						{
-							"auto_name": "sudo nano /etc/init.d/nodejs.sh",
+							"auto_name": "cd",
+							"codeintel": true,
+							"codeintel_config":
+							{
+								"JavaScript":
+								{
+									"codeintel_max_recursive_dir_depth": 2,
+									"codeintel_scan_files_in_project": false,
+									"javascriptExtraPaths":
+									[
+									]
+								},
+								"PHP":
+								{
+									"codeintel_max_recursive_dir_depth": 5,
+									"codeintel_scan_files_in_project": false,
+									"phpExtraPaths":
+									[
+									]
+								},
+								"Python":
+								{
+									"env":
+									{
+									}
+								}
+							},
+							"codeintel_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_live": true,
+							"codeintel_live_enabled_languages":
+							[
+								"JavaScript",
+								"Mason",
+								"XBL",
+								"XUL",
+								"RHTML",
+								"SCSS",
+								"Python",
+								"HTML",
+								"Ruby",
+								"Python3",
+								"XML",
+								"Sass",
+								"XSLT",
+								"Django",
+								"HTML5",
+								"Perl",
+								"CSS",
+								"Twig",
+								"Less",
+								"Smarty",
+								"Node.js",
+								"Tcl",
+								"TemplateToolkit",
+								"PHP"
+							],
+							"codeintel_max_recursive_dir_depth": 10,
+							"codeintel_scan_exclude_dir":
+							{
+								"JavaScript":
+								[
+									"/build/",
+									"/min/"
+								]
+							},
+							"codeintel_scan_files_in_project": true,
+							"codeintel_selected_catalogs":
+							[
+								"PyWin32",
+								"jQuery",
+								"Rails"
+							],
+							"codeintel_snippets": true,
+							"codeintel_syntax_map":
+							{
+								"Python Django": "Python"
+							},
+							"codeintel_tooltips": "popup",
+							"sublime_auto_complete": true,
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 255,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
 							"codeintel": true,
 							"codeintel_config":
 							{
@@ -1591,11 +2328,12 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 14,
+					"file": "/home/jakob/Dropbox/Development/webcam/wget and vlc.txt",
 					"semi_transient": false,
 					"settings":
 					{
@@ -1723,7 +2461,35 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "Services/HDMISwitchService/samsung tv example",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 2890,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								33,
+								33
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
@@ -1766,7 +2532,7 @@
 	},
 	"output.exec":
 	{
-		"height": 220.0
+		"height": 97.0
 	},
 	"output.find_results":
 	{
@@ -1846,6 +2612,7 @@
 		],
 		"width": 0.0
 	},
+	"selected_group": 0,
 	"settings":
 	{
 	},
